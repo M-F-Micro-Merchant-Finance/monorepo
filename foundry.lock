@@ -1,8 +1,29 @@
 {
+  "lib/mento-deployment": {
+    "rev": "0b58eae745348044a5d736daf8f45c1e7fad02de"
+  },
+  "lib/oracle-v2-playground": {
+    "rev": "7f8309a6d519ae07c0b26f681fdf450387440e42"
+  },
+  "lib/mento-router": {
+    "rev": "80d12779d15c182249bbd4e9a245a9b08c6ba843"
+  },
+  "lib/governance-tests": {
+    "rev": "3d786dce23f1928125d66e413ab31892fa2890cd"
+  },
+  "lib/mento-core": {
+    "tag": {
+      "name": "v2.6.5",
+      "rev": "4ce201f85b3230b1db0afa45296f3b3d6ce9e2d2"
+    }
+  },
   "lib/forge-std": {
     "tag": {
       "name": "v1.10.0",
       "rev": "8bbcf6e3f8f62f419e5429a0bd89331c85c37824"
     }
+  },
+  "lib/mento-std": {
+    "rev": "7e609362ea7bf3f6b9a3d972660c69e4339cc798"
   }
 }

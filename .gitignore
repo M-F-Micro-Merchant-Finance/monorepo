@@ -15,3 +15,16 @@ docs/
 docs/
 refs/
 utils/
+node_modules
+.cursor
+pdf_images/
+pdf_analysis/
+pdf_analysis_images/
+pdf_analysis_tables/
+pdf_analysis_enhanced/
+pdf_analysis_text/
+pdf_analysis_summary/
+pdf_analysis_summary_enhanced/
+pdf_analysis_summary_text/
+pdf_analysis_summary_tables/
+pdf_analysis_summary_enhanced/

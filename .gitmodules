@@ -1,3 +1,24 @@
 [submodule "lib/forge-std"]
 	path = lib/forge-std
 	url = https://github.com/foundry-rs/forge-std
+[submodule "lib/mento-core"]
+	path = lib/mento-core
+	url = https://github.com/mento-protocol/mento-core
+[submodule "lib/mento-deployment"]
+	path = lib/mento-deployment
+	url = https://github.com/mento-protocol/mento-deployment
+[submodule "lib/governance-tests"]
+	path = lib/governance-tests
+	url = https://github.com/mento-protocol/governance-tests
+[submodule "lib/oracle-v2-playground"]
+	path = lib/oracle-v2-playground
+	url = https://github.com/mento-protocol/oracle-v2-playground
+[submodule "lib/mento-std"]
+	path = lib/mento-std
+	url = https://github.com/mento-protocol/mento-std
+[submodule "lib/mento-router"]
+	path = lib/mento-router
+	url = https://github.com/mento-protocol/mento-router
+[submodule "lib/hackathon-demo"]
+	path = lib/hackathon-demo
+	url = https://github.com/mento-protocol/hackathon-demo

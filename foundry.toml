@@ -1,6 +1,46 @@
 [profile.default]
 src = "src"
-out = "out"
-libs = ["lib"]
+out = "foundry-out"
+script = "script"
+test = "test"
+libs = ["lib", "node_modules"]
+solc_version = "0.8.28"
+
+auto_detect_remappings = true
+bytecode_hash = "none"
+gas_limit = "3000000000"
+
+fs_permissions = [
+    { access = "read-write", path = ".forge-snapshots/" }, 
+    { access = "read", path = "foundry-out/" },
+    { access = "read", path = "./broadcast" },
+    { access = "read", path = "./reports" }
+]
+
+
+
+remappings = [
+    "@self/=node_modules/@selfxyz/contracts/contracts/",
+    "@cryptoalgebra/plugins/=node_modules/@cryptoalgebra/integral-base-plugin/contracts/",
+    "@cryptoalgebra/core/=node_modules/@cryptoalgebra/integral-core/contracts/",
+    "@cryptoalgebra/periphery/=node_modules/@cryptoalgebra/integral-periphery/contracts/",
+    "forge-std/=lib/forge-std/src/",
+    "mento-core/=lib/mento-core/",
+    "mento-deployment/=lib/mento-deployment/",
+    "mento-std/=lib/mento-std/",
+    "mento-router/=lib/mento-router/",
+    "governance-tests/=lib/governance-tests/",
+    "oracle-v2-playground/=lib/oracle-v2-playground/"
+]
+
+[rpc_endpoints]
+celo = "https://forno.celo.org"
+celo_alfajores = "https://alfajores-forno.celo-testnet.org"
+celo_baklava = "https://baklava-forno.celo-testnet.org"
+
+[etherscan]
+celo = { key = "${CELO_API_KEY}" }
+celo_alfajores = { key = "${CELO_API_KEY}" }
+celo_baklava = { key = "${CELO_API_KEY}" }
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options

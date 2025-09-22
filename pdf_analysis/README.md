@@ -26,3 +26,12 @@ This directory contains comprehensive analysis of academic PDFs with special att
 - **Tables**: 1 files
 - **Summary**: `pdf_analysis/celoo_whitepaper/processing_summary.md`
 
+### Guidelines-for-Smart-Contracts-CDS.pdf
+
+- **Directory**: `Guidelines-for-Smart-Contracts-CDS.pdf/`
+- **Text**: `pdf_analysis/Guidelines-for-Smart-Contracts-CDS/Guidelines-for-Smart-Contracts-CDS.txt`
+- **Enhanced**: `pdf_analysis/Guidelines-for-Smart-Contracts-CDS/Guidelines-for-Smart-Contracts-CDS_enhanced.txt`
+- **Images**: 36 files
+- **Tables**: 1 files
+- **Summary**: `pdf_analysis/Guidelines-for-Smart-Contracts-CDS/processing_summary.md`
+

@@ -1,0 +1,47 @@
+{
+  "name": "celo-pos-hooks",
+  "version": "1.0.0",
+  "description": "Celo Proof of Stake hooks for Uniswap V4 integration",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "hardhat": "hardhat",
+    "compile": "hardhat compile",
+    "test:hardhat": "hardhat test",
+    "deploy": "hardhat run script/deploy.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/your-org/Celo-PoS.git"
+  },
+  "keywords": [
+    "celo",
+    "uniswap-v4",
+    "hooks",
+    "defi",
+    "pos"
+  ],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/your-org/Celo-PoS/issues"
+  },
+  "homepage": "https://github.com/your-org/Celo-PoS#readme",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-foundry": "^1.2.0",
+    "@nomicfoundation/hardhat-toolbox": "^6.1.0",
+    "@types/node": "^20.0.0",
+    "hardhat": "^2.26.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "@selfxyz/contracts": "^1.2.1",
+    "ethers": "^6.15.0",
+    "viem": "^2.34.0"
+  }
+}
