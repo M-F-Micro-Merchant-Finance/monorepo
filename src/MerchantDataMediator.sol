@@ -1,0 +1,92 @@
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.0;
+
+import {IMerchantDataMediator} from "./interfaces/IMerchantDataMediator.sol";
+import "./types/Shared.sol";
+//==================================================================================
+import {
+    CreditRisk,
+    CreditRiskLibrary
+} from "./types/CreditRisk.sol";
+
+import {
+    BusinessFundamentals,
+    BusinessFundamentalsLibrary
+} from "./types/BusinessFundamentals.sol";
+
+import {
+    FinancialHealth,
+    FinancialHealthLibrary
+} from "./types/FinancialHealth.sol";
+
+import {
+    MarketRisk,
+    MarketRiskLibrary
+} from "./types/MarketRisk.sol";
+
+import {
+    Metrics,
+    MetricsLibrary
+} from "./types/Metrics.sol";
+//==================================================================================
+
+
+import {EnumerableMap} from "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
+
+//==================================================================================
+
+import {ICDSFactory} from "./interfaces/ICDSFactory.sol";
+
+
+contract MerchantDataMediator is IMerchantDataMediator {
+    using CreditRiskLibrary for CreditRisk;
+    using BusinessFundamentalsLibrary for BusinessFundamentals;
+    using FinancialHealthLibrary for FinancialHealth;
+    using MarketRiskLibrary for MarketRisk;
+    using EnumerableMap for EnumerableMap.Bytes32ToBytes32Map;
+    using MetricsLibrary for MerchantOnboardingData;
+
+
+    ICDSFactory public immutable cdsFactory;
+
+    constructor(
+        ICDSFactory _cdsFactory
+    ) {
+        cdsFactory = _cdsFactory;
+    }
+ 
+ 
+ 
+    // NOTE The business Id hash also includes the country code hash
+    // NOTE This is better saved on a mapping (one businessId has one countryCodeHash)
+    mapping(bytes32 businessId => bytes32 countryCodeHash) private businessIdToCountryCodeHash;
+    
+    // One country code has many business Ids
+    //NOTE: Country HashIt must coincide with one of the available countries
+    // On the CountryCodes library 
+    EnumerableMap.Bytes32ToBytes32Map private businessesPerCountry;
+
+    // NOTE The financial profile is handled off-chain to calculate the dredi score
+    // One businessId has one to many creditAssesmentId
+    // Thus this is a enumerableMapping with keys businessId
+
+    EnumerableMap.Bytes32ToBytes32Map private creditAssesmentIdsPerBusinessId;
+    
+    // NOTE: One creditAssesment has one colleteral thus this is a mapping
+    // mapping(bytes32 creditAssesmentId => Collateral collateral)
+    mapping(bytes32 creditAssesmentId => Collateral collateral) private creditAssesmentIdToCollateral;
+
+    // NOTE: One creditAssesment has one metrics thus this is a mapping
+    // mapping(bytes32 creditAssesmentId => Metrics metrics)
+    mapping(bytes32 creditAssesmentId => Metrics metrics) private creditAssesmentMetrics;
+
+
+    function onUserDataHook(bytes memory userData) external {
+        
+        MerchantOnboardingData memory merchantOnboardingData = abi.decode(userData, (MerchantOnboardingData));
+        Metrics memory metrics = merchantOnboardingData.buildMetrics();
+        creditAssesmentMetrics[merchantOnboardingData.creditAssesmentId] = metrics;
+
+        cdsFactory.createCDS(merchantOnboardingData.creditAssesmentId, metrics);
+    }
+}

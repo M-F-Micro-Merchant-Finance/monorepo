@@ -5,6 +5,8 @@ pragma solidity ^0.8.0;
 
 import "@self/abstract/SelfVerificationRoot.sol";
 import "../interfaces/IMerchantIdentityVerification.sol";
+import "../interfaces/IMerchantDataMediator.sol";
+
 // B->>B: Verify proof with SelfBackendVerifier
 // B->>C: Call verifyMerchantIdentity
 // C->>C: Verify proof on-chain
@@ -14,11 +16,18 @@ abstract contract MerchantIdentityVerificationBase is IMerchantIdentityVerificat
     uint256 public constant MERCHANT_IDENTITY_VERIFICATION_SCOPE = 0xc129bc5f93e22c183334b9b2c30177e2d57dcd51ff7fe00f2d197be4ae3507e8;
 
 
-    uint256 public minAgeRequirement;
+    uint256 private minAgeRequirement;
+    IMerchantDataMediator private userDataRouter;
+    
+    mapping(address => bool) private _isVerifiedMerchant;
 
-    mapping(address => bool) public isVerifiedMerchant;
-
-    constructor(address _hubAddress) SelfVerificationRoot(_hubAddress, MERCHANT_IDENTITY_VERIFICATION_SCOPE) {}
+    
+    constructor(
+        address _hubAddress,
+        IMerchantDataMediator _userDataRouter
+    ) SelfVerificationRoot(_hubAddress, MERCHANT_IDENTITY_VERIFICATION_SCOPE) {
+        userDataRouter = _userDataRouter;
+    }
 
     
     // TODO: This function is only callabale by governance
@@ -40,27 +49,29 @@ abstract contract MerchantIdentityVerificationBase is IMerchantIdentityVerificat
         verifySelfProof(proofPayload, userContextData);
     }
 
+    // NOTE: This function can be further overridden by child contracts
     function customVerificationHook(
         ISelfVerificationRoot.GenericDiscloseOutputV2 memory output,
         bytes memory userData
-    ) internal override {
+    ) internal virtual override {
         // TODO: This is a place holder but shoudl include 
         // additional logic required for merchant verification and
         // identification
-        _onUserData(userData);
+        userDataRouter.onUserDataHook(userData);
 
         // TODO This is the last thing it does in the verification process
         // TODO: Is the msg.sender the merchant Id ??
-        isVerifiedMerchant[msg.sender] = true;
+        _isVerifiedMerchant[msg.sender] = true;
         emit MerchantVerified(msg.sender, uint256(output.attestationId), block.timestamp, output.nullifier);
 
     }
 
+    function isVerifiedMerchant(address _merchant) external view returns (bool) {
+        return _isVerifiedMerchant[_merchant];
+    }
 
-    // TODO: This function can be named differently is just a place holder that child conracts
-    // need to override for custom logc required for merchan verification and identification
 
-    function _onUserData(bytes memory userData) internal virtual;
+
 
     
 }
