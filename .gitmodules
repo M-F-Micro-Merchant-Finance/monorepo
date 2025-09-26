@@ -38,3 +38,9 @@
 [submodule "lib/plugins-monorepo"]
 	path = lib/plugins-monorepo
 	url = https://github.com/cryptoalgebra/plugins-monorepo
+[submodule "lib/foundry-devops"]
+	path = lib/foundry-devops
+	url = https://github.com/Cyfrin/foundry-devops
+[submodule "lib/openzeppelin-contracts-v5"]
+	path = lib/openzeppelin-contracts-v5
+	url = https://github.com/OpenZeppelin/openzeppelin-contracts.git

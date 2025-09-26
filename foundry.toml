@@ -31,19 +31,21 @@ remappings = [
     "@uniswap/v4-core/=lib/v4-periphery/lib/v4-core/",
     "@uniswap/v4-periphery/=lib/v4-periphery/",
     "@openzeppelin/=lib/openzeppelin-contracts/",
+    "@openzeppelin-v5/=lib/openzeppelin-contracts-v5/",
     "forge-std/=lib/forge-std/src/",
     "mento-core/=lib/mento-core/",
     "mento-deployment/=lib/mento-deployment/",
     "mento-std/=lib/mento-std/",
     "mento-router/=lib/mento-router/",
     "governance-tests/=lib/governance-tests/",
-    "oracle-v2-playground/=lib/oracle-v2-playground/"
+    "oracle-v2-playground/=lib/oracle-v2-playground/",
+    "@Cyfrin/foundry-devops/=lib/foundry-devops/src/"
 ]
 
 [rpc_endpoints]
-celo = "https://forno.celo.org"
-celo_alfajores = "https://alfajores-forno.celo-testnet.org"
-celo_baklava = "https://baklava-forno.celo-testnet.org"
+celo = "https://rpc.celo-community.org"
+celo_alfajores = "https://alfajores-rpc.celo-community.org"
+celo_baklava = "https://baklava-rpc.celo-community.org"
 
 [etherscan]
 celo = { key = "${CELO_API_KEY}" }
