@@ -36,9 +36,9 @@ import {EnumerableMap} from "@openzeppelin/contracts/utils/structs/EnumerableMap
 //==================================================================================
 
 import {ICDSFactory} from "./interfaces/ICDSFactory.sol";
+import {AlgebraCustomPoolEntryPoint} from "@cryptoalgebra/integral-periphery/contracts/AlgebraCustomPoolEntryPoint.sol";
 
-
-contract MerchantDataMediator is IMerchantDataMediator {
+contract MerchantDataMediator is IMerchantDataMediator, AlgebraCustomPoolEntryPoint {
     using CreditRiskLibrary for CreditRisk;
     using BusinessFundamentalsLibrary for BusinessFundamentals;
     using FinancialHealthLibrary for FinancialHealth;
@@ -51,7 +51,7 @@ contract MerchantDataMediator is IMerchantDataMediator {
 
     constructor(
         ICDSFactory _cdsFactory
-    ) {
+    ) AlgebraCustomPoolEntryPoint(_cdsFactory.algebraFactory()) {
         cdsFactory = _cdsFactory;
     }
  
@@ -84,9 +84,16 @@ contract MerchantDataMediator is IMerchantDataMediator {
     function onUserDataHook(bytes memory userData) external {
         
         MerchantOnboardingData memory merchantOnboardingData = abi.decode(userData, (MerchantOnboardingData));
+        (address protectionSeller, address merchantWallet) = (merchantOnboardingData.protectionSeller, merchantOnboardingData.merchantWallet);
         Metrics memory metrics = merchantOnboardingData.buildMetrics();
         creditAssesmentMetrics[merchantOnboardingData.creditAssesmentId] = metrics;
 
-        cdsFactory.createCDS(merchantOnboardingData.creditAssesmentId, metrics);
+        cdsFactory.createCDS(
+            protectionSeller,
+            merchantWallet,
+            merchantOnboardingData.businessId,
+            merchantOnboardingData.countryCodeHash,
+            merchantOnboardingData.creditAssesmentId, metrics
+        );
     }
 }

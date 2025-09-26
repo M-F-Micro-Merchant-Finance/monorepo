@@ -13,6 +13,10 @@ struct MerchantOnboardingData{
     // Collateral collateral;
     address collateralAddress;
     uint8 collateralType;
+    
+    // CDS Entity Management
+    address protectionSeller; // Initial protection seller (can be changed later)
+    address merchantWallet; // Merchant's wallet address for receiving tokens
 
     // Core risk metrics (0-100 scale)
     uint8 creditScore;
@@ -20,6 +24,7 @@ struct MerchantOnboardingData{
     uint8 lossGivenDefault;
     uint8 recoveryRate;
     // uint256 correlationFactor;
+    
 
     // Business fundamentals (0-100 scale)
     uint8 businessAgeScore;         // Based on business age

@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 
 
-import "@self/abstract/SelfVerificationRoot.sol";
+import "./self/SelfVerificationRoot.sol";
 import "../interfaces/IMerchantIdentityVerification.sol";
 import "../interfaces/IMerchantDataMediator.sol";
 

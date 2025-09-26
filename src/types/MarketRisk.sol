@@ -10,7 +10,7 @@ import {Rating} from "./Shared.sol";
 // uint256 marketVolatility;         // Market volatility (0-100)
 // uint256 economicCyclePosition;    // Economic cycle position (1-5)
 // uint256 regulatoryStability;      // Regulatory stability (1-5)
-// uint256 seasonality;        // Seasonal impact (1-5)
+// uint256 seasonality;              // Seasonal impact (1-5)
 
 type MarketRisk is uint256;
 

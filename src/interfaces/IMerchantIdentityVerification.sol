@@ -124,7 +124,7 @@ pragma solidity ^0.8.0;
 //   }
 // });
 
-import "@self/interfaces/ISelfVerificationRoot.sol";
+import "./self/ISelfVerificationRoot.sol";
 import {Currency} from "@uniswap/v4-core/src/types/Currency.sol";
 
 interface IMerchantIdentityVerification is  ISelfVerificationRoot{

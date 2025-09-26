@@ -4,8 +4,7 @@ out = "foundry-out"
 script = "script"
 test = "test"
 libs = ["lib", "node_modules"]
-solc_version = "0.8.28"
-
+solc_version = "0.8.20"
 auto_detect_remappings = true
 bytecode_hash = "none"
 gas_limit = "3000000000"
@@ -19,11 +18,16 @@ fs_permissions = [
 
 
 
+
 remappings = [
     "@self/=node_modules/@selfxyz/contracts/contracts/",
-    "@cryptoalgebra/plugins/=node_modules/@cryptoalgebra/integral-base-plugin/contracts/",
-    "@cryptoalgebra/core/=node_modules/@cryptoalgebra/integral-core/contracts/",
-    "@cryptoalgebra/periphery/=node_modules/@cryptoalgebra/integral-periphery/contracts/",
+    "@cryptoalgebra/default-plugin/=lib/plugins-monorepo/packages/default-plugin/",
+    "@cryptoalgebra/abstract-plugin/=lib/plugins-monorepo/packages/abstract-plugin/",
+    "@cryptoalgebra/dynamic-fee-plugin/=lib/plugins-monorepo/packages/dynamic-fee/",
+    "@cryptoalgebra/farming-proxy-plugin/=lib/plugins-monorepo/packages/farming-proxy/",
+    "@cryptoalgebra/volatility-oracle-plugin/=lib/plugins-monorepo/packages/volatility-oracle/",
+    "@cryptoalgebra/integral-core/=lib/Algebra/src/core/",
+    "@cryptoalgebra/integral-periphery/=lib/Algebra/src/periphery/",
     "@uniswap/v4-core/=lib/v4-periphery/lib/v4-core/",
     "@uniswap/v4-periphery/=lib/v4-periphery/",
     "@openzeppelin/=lib/openzeppelin-contracts/",

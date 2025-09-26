@@ -28,3 +28,13 @@
 [submodule "lib/openzeppelin-contracts"]
 	path = lib/openzeppelin-contracts
 	url = https://github.com/Openzeppelin/openzeppelin-contracts
+[submodule "lib/Roci-Smart-Contracts-v2"]
+	path = lib/Roci-Smart-Contracts-v2
+	url = https://github.com/RociFi/Roci-Smart-Contracts-v2
+[submodule "lib/Algebra"]
+	path = lib/Algebra
+	url = https://github.com/cryptoalgebra/Algebra
+	branch = integral-v1.2.2
+[submodule "lib/plugins-monorepo"]
+	path = lib/plugins-monorepo
+	url = https://github.com/cryptoalgebra/plugins-monorepo
