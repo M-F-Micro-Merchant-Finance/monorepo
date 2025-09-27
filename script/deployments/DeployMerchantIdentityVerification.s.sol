@@ -7,13 +7,16 @@ import {MerchantIdentityVerification} from "../../src/MerchantIdentityVerificati
 import {IMerchantIdentityVerification} from "../../src/interfaces/IMerchantIdentityVerification.sol";
 import {IMerchantDataMediator} from "../../src/interfaces/IMerchantDataMediator.sol";
 import {ICDSFactory} from "../../src/interfaces/ICDSFactory.sol";
+import {SelfUtils} from "../../src/libraries/self/SelfUtils.sol";
+import {ICDSFactory} from "../../src/interfaces/ICDSFactory.sol";
 
 contract DeployMerchantIdentityVerification is Script {
  
     function run(
         address _hubAddress,
         IMerchantDataMediator _merchantDataMediator,
-        ICDSFactory _cdsFactory
+        uint256 _scopeValue,
+        SelfUtils.UnformattedVerificationConfigV2 memory _rawVerificationConfig
     ) public returns (IMerchantIdentityVerification) {
         
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
@@ -22,7 +25,8 @@ contract DeployMerchantIdentityVerification is Script {
         MerchantIdentityVerification merchantIdentityVerification = new MerchantIdentityVerification(
             _hubAddress,
             _merchantDataMediator,
-            _cdsFactory
+            _scopeValue,
+            _rawVerificationConfig
         );
 
         vm.stopBroadcast();

@@ -21,11 +21,12 @@ import {DeployMerchantIdentityVerification} from "../../script/deployments/Deplo
 
 import {IMentoStableCoinSelector} from "../../src/interfaces/IMentoStableCoinSelector.sol";
 import {IAlgebraFactory} from "@cryptoalgebra/integral-core/contracts/interfaces/IAlgebraFactory.sol";
+import {IAlgebraPoolDeployer} from "@cryptoalgebra/integral-core/contracts/interfaces/IAlgebraPoolDeployer.sol";
 import {ICDSFactory} from "../../src/interfaces/ICDSFactory.sol";
 import {IMerchantDataMediator} from "../../src/interfaces/IMerchantDataMediator.sol";
 import {IMerchantIdentityVerification} from "../../src/interfaces/IMerchantIdentityVerification.sol";
 import {ICDS} from "../../src/interfaces/ICDS.sol";
-
+import {SelfUtils} from "../../src/libraries/self/SelfUtils.sol";
 
 
 contract MerchantIdentityVerificationForkTest is Test, MerchantIdentityVerificationMockDataGenerator{
@@ -37,8 +38,9 @@ contract MerchantIdentityVerificationForkTest is Test, MerchantIdentityVerificat
     IMentoStableCoinSelector public mentoStableCoinSelector;
     ICDSFactory public cdsFactory;
     IMerchantDataMediator public merchantDataMediator;
+    IMerchantIdentityVerification public merchantIdentityVerification;
+    IAlgebraPoolDeployer public algebraPoolDeployer;
 
-    MerchantIdentityVerification private merchantIdentityVerification;
 
     
     function setUp() public {
@@ -65,7 +67,7 @@ contract MerchantIdentityVerificationForkTest is Test, MerchantIdentityVerificat
         address algebraFactoryAddress = DevOpsTools.get_most_recent_deployment("AlgebraFactory", 42220);
         
         if (algebraFactoryAddress == address(0x00)) {
-            algebraFactory = deployAlgebraFactory.run();
+            (algebraFactory, algebraPoolDeployer) = deployAlgebraFactory.run();
         }
         address cdsFactoryAddress = DevOpsTools.get_most_recent_deployment("CDSFactory", 42220);
 
@@ -82,8 +84,12 @@ contract MerchantIdentityVerificationForkTest is Test, MerchantIdentityVerificat
         address merchantIdentityVerificationAddress = DevOpsTools.get_most_recent_deployment("MerchantIdentityVerification", 42220);
 
         if (merchantIdentityVerificationAddress == address(0x00)) {
-            merchantIdentityVerification = deployMerchantIdentityVerification.run(HUB_ADDRESS, merchantDataMediator, cdsFactory);
+            merchantIdentityVerification = deployMerchantIdentityVerification.run(
+                HUB_ADDRESS, merchantDataMediator, _generateMockScopeValue(), _generateMockUnformattedVerificationConfigV2()
+            );
+    
         }
+        merchantIdentityVerification = IMerchantIdentityVerification(merchantIdentityVerificationAddress);
 
     }
 }

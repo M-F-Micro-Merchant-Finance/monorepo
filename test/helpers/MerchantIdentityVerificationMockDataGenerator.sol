@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 
 import {MerchantOnboardingData} from "../../src/types/Shared.sol";
 import {CollateralType} from "../../src/types/Shared.sol";
+import {SelfUtils} from "../../src/libraries/self/SelfUtils.sol";
 import {Vm} from "forge-std/Vm.sol";
 import {CommonBase} from "forge-std/Base.sol";
 struct MockData {
@@ -17,10 +18,8 @@ import {StdCheatsSafe} from "forge-std/StdCheats.sol";
 contract MerchantIdentityVerificationMockDataGenerator is StdCheatsSafe {
     
     
-    function _setupMockData() internal returns (MockData memory) {
-    // Create mock merchant data
-        return MockData({
-            merchantOnboardingData: MerchantOnboardingData({
+    function _generateMockMerchantOnboardingData() internal returns (MerchantOnboardingData memory) {
+        return MerchantOnboardingData({
             businessId: keccak256("Green Valley Farm"),
             countryCodeHash: keccak256("KE"),
             creditAssesmentId: keccak256("credit_assessment_001"),
@@ -45,7 +44,13 @@ contract MerchantIdentityVerificationMockDataGenerator is StdCheatsSafe {
             economicCyclePosition: 3,
             regulatoryStability: 4,
             seasonality: 2
-        }),
+        });
+    }
+
+    function _setupMockData() internal returns (MockData memory) {
+        // Create mock merchant data
+        return MockData({
+            merchantOnboardingData: _generateMockMerchantOnboardingData(),
             mockProofPayload: _generateMockProofPayload(),
             mockUserContextData: _generateMockUserContextData()
         });
@@ -96,12 +101,82 @@ contract MerchantIdentityVerificationMockDataGenerator is StdCheatsSafe {
         // Format: | 32 bytes destChainId | 32 bytes userIdentifier | merchant data |
         bytes32 destChainId = bytes32(uint256(42220)); // Celo mainnet
         bytes32 userIdentifier = bytes32(uint256(12345));
-        MerchantOnboardingData memory mockMerchantData = _setupMockData().merchantOnboardingData;
+        MerchantOnboardingData memory mockMerchantData = _generateMockMerchantOnboardingData();
         // Encode merchant data
         bytes memory merchantDataBytes = abi.encode(mockMerchantData);
         
         // Combine all data
         return abi.encodePacked(destChainId, userIdentifier, merchantDataBytes);
+    }
+
+    /**
+     * @dev Generates mock UnformattedVerificationConfigV2 for testing
+     * @return config Mock verification configuration with realistic test values
+     */
+    function _generateMockUnformattedVerificationConfigV2() internal pure returns (SelfUtils.UnformattedVerificationConfigV2 memory config) {
+        // Create array of forbidden countries (3-letter country codes)
+        string[] memory forbiddenCountries = new string[](3);
+        forbiddenCountries[0] = "IRN"; // Iran
+        forbiddenCountries[1] = "PRK"; // North Korea
+        forbiddenCountries[2] = "SYR"; // Syria
+        
+        config = SelfUtils.UnformattedVerificationConfigV2({
+            olderThan: 18, // Minimum age requirement
+            forbiddenCountries: forbiddenCountries,
+            ofacEnabled: true // Enable OFAC checks
+        });
+    }
+
+    /**
+     * @dev Generates a minimal UnformattedVerificationConfigV2 for testing (all disabled)
+     * @return config Mock verification configuration with all features disabled
+     */
+    function _generateMinimalMockUnformattedVerificationConfigV2() internal pure returns (SelfUtils.UnformattedVerificationConfigV2 memory config) {
+        // Empty array for no forbidden countries
+        string[] memory emptyForbiddenCountries = new string[](0);
+        
+        config = SelfUtils.UnformattedVerificationConfigV2({
+            olderThan: 0, // No age requirement
+            forbiddenCountries: emptyForbiddenCountries,
+            ofacEnabled: false // Disable OFAC checks
+        });
+    }
+
+    /**
+     * @dev Generates a strict UnformattedVerificationConfigV2 for testing (all enabled)
+     * @return config Mock verification configuration with strict requirements
+     */
+    function _generateStrictMockUnformattedVerificationConfigV2() internal pure returns (SelfUtils.UnformattedVerificationConfigV2 memory config) {
+        // Create array of many forbidden countries
+        string[] memory forbiddenCountries = new string[](6);
+        forbiddenCountries[0] = "IRN"; // Iran
+        forbiddenCountries[1] = "PRK"; // North Korea
+        forbiddenCountries[2] = "SYR"; // Syria
+        forbiddenCountries[3] = "CUB"; // Cuba
+        forbiddenCountries[4] = "VEN"; // Venezuela
+        forbiddenCountries[5] = "RUS"; // Russia
+        
+        config = SelfUtils.UnformattedVerificationConfigV2({
+            olderThan: 21, // Higher age requirement
+            forbiddenCountries: forbiddenCountries,
+            ofacEnabled: true // Enable OFAC checks
+        });
+    }
+
+    /**
+     * @dev Generates a mock scope value for Self Protocol verification
+     * @return scopeValue A deterministic scope value for testing purposes
+     */
+    function _generateMockScopeValue() internal pure returns (uint256 scopeValue) {
+        // Generate a deterministic scope value based on application identifier
+        // This mimics how scope values are typically generated in production
+        string memory appIdentifier = "merchant-cds-verification";
+        string memory endpoint = "https://api.self.xyz/verify";
+        string memory scopeSeed = "test-scope-2025";
+        
+        // Combine identifiers and hash to create scope value
+        bytes memory scopeData = abi.encodePacked(appIdentifier, endpoint, scopeSeed);
+        scopeValue = uint256(keccak256(scopeData));
     }
 
 
