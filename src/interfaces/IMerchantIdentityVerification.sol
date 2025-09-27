@@ -126,9 +126,12 @@ pragma solidity ^0.8.0;
 
 import "./self/ISelfVerificationRoot.sol";
 import {Currency} from "@uniswap/v4-core/src/types/Currency.sol";
-
+import {SelfStructs} from "../libraries/self/SelfStructs.sol";
 interface IMerchantIdentityVerification is  ISelfVerificationRoot{
-    
+    struct SelfConfig{
+        bytes32 configId;
+        SelfStructs.VerificationConfigV2 verificationConfig;
+    }
 
     event MerchantVerified(
         address indexed merchant,
@@ -149,15 +152,27 @@ interface IMerchantIdentityVerification is  ISelfVerificationRoot{
         uint256 timestamp
     );
 
-    error MinAgeRequirementTooLow();
+    event VerificationConfigUpdated(
+        bytes32 indexed configId
+    );
 
+    event MinAgeRequirementUpdated(
+        uint256 newMinAgeRequirement
+    );
+
+    error MinAgeRequirementTooLow();
+    error VerificationConfigNotFound();
+    error MechantAlreadyVerified();
+    error InvalidMerchantAddress();
+    error UnderageMerchant();
+    
     function verifyMerchantIdentity(
         bytes calldata proofPayload,
         bytes calldata userContextData
     ) external;
 
     function setMinAgeRequirement(uint256 _minAgeRequirement) external;
-    function isVerifiedMerchant(address _merchant) external view returns (bool);
+    function isVerifiedMerchant(bytes32 _creditAssesmentId) external view returns (bool);
 
 
 

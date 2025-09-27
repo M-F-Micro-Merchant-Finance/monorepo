@@ -10,12 +10,20 @@ import {IMerchantDataMediator} from "./interfaces/IMerchantDataMediator.sol";
 
 import {AlgebraCustomPluginFactory} from "@cryptoalgebra/default-plugin/contracts/AlgebraCustomPluginFactory.sol";
 import {AlgebraPoolDeployer} from "@cryptoalgebra/integral-core/contracts/AlgebraPoolDeployer.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-abstract contract CDSFactory is ICDSFactory, AlgebraCustomPluginFactory, AlgebraPoolDeployer {
+import {IMentoStableCoinSelector} from "./interfaces/IMentoStableCoinSelector.sol";
+import {IAlgebraFactory} from "@cryptoalgebra/integral-core/contracts/interfaces/IAlgebraFactory.sol";
+import {AlgebraCustomPoolEntryPoint} from "@cryptoalgebra/integral-periphery/contracts/AlgebraCustomPoolEntryPoint.sol";
+
+
+contract CDSFactory is ICDSFactory, AlgebraCustomPoolEntryPoint {
     using Clones for address;
 
 
-    IMerchantDataMediator public immutable merchantDataMediator;
+    IMerchantDataMediator public merchantDataMediator;
+    IMentoStableCoinSelector public mentoStableCoinSelector;
+    
     address public immutable CDS_IMPLEMENTATION;
 
     mapping(bytes32 creditAssesmentId => address cds) private _deployedCDS;
@@ -23,14 +31,27 @@ abstract contract CDSFactory is ICDSFactory, AlgebraCustomPluginFactory, Algebra
 
     
     constructor(
-        IMerchantDataMediator _merchantDataMediator
-    ) {
+        IAlgebraFactory _algebraFactory,
+        IMentoStableCoinSelector _mentoStableCoinSelector
+    ) AlgebraCustomPoolEntryPoint(address(_algebraFactory)) {
         // CDS_IMPLEMENTATION = address(new CDS());
         //NOTE: PlaceHolder for compilation 
-        CDS_IMPLEMENTATION = address(0x123);
+        mentoStableCoinSelector = _mentoStableCoinSelector;
+        CDS_IMPLEMENTATION = address(new CDS(
+            IMentoStableCoinSelector(mentoStableCoinSelector),
+            ICDSFactory(address(this))
+            )
+        );
+
+    }
+
+    function setMerchantDataMediator(IMerchantDataMediator _merchantDataMediator) external {
         merchantDataMediator = _merchantDataMediator;
     }
 
+    function getMerchantDataMediator() external view returns(IMerchantDataMediator) {
+        return merchantDataMediator;
+    }
 
     function createCDS(address protectionSeller, address merchantWallet, bytes32 businessId, bytes32 countryCodeHash, bytes32 creditAssesmentId, Metrics memory metrics) external returns(ICDS) {
         if (_isCDSDeployed[_deployedCDS[creditAssesmentId]]) {

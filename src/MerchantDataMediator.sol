@@ -51,7 +51,7 @@ contract MerchantDataMediator is IMerchantDataMediator, AlgebraCustomPoolEntryPo
 
     constructor(
         ICDSFactory _cdsFactory
-    ) AlgebraCustomPoolEntryPoint(_cdsFactory.algebraFactory()) {
+    ) AlgebraCustomPoolEntryPoint(_cdsFactory.factory()) {
         cdsFactory = _cdsFactory;
     }
  

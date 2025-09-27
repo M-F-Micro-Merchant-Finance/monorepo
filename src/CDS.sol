@@ -15,12 +15,12 @@ import {MarketRisk, MarketRiskLibrary} from "./types/MarketRisk.sol";
 import {BusinessFundamentals, BusinessFundamentalsLibrary} from "./types/BusinessFundamentals.sol";
 import {CreditRisk, CreditRiskLibrary} from "./types/CreditRisk.sol";
 import {ICDSFactory} from "./interfaces/ICDSFactory.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IERC20} from "forge-std/interfaces/IERC20.sol";
 
-import "@openzeppelin/contracts/token/ERC6909/draft-ERC6909.sol";
-import "@openzeppelin/contracts/token/ERC6909/extensions/draft-ERC6909Metadata.sol";
-import "@openzeppelin/contracts/token/ERC6909/extensions/draft-ERC6909ContentURI.sol";
-import "@openzeppelin/contracts/token/ERC6909/extensions/draft-ERC6909TokenSupply.sol";
+import "@openzeppelin-v5/contracts/token/ERC6909/draft-ERC6909.sol";
+import "@openzeppelin-v5/contracts/token/ERC6909/extensions/draft-ERC6909Metadata.sol";
+import "@openzeppelin-v5/contracts/token/ERC6909/extensions/draft-ERC6909ContentURI.sol";
+import "@openzeppelin-v5/contracts/token/ERC6909/extensions/draft-ERC6909TokenSupply.sol";
 
 // CryptoAlgebra imports
 
@@ -28,7 +28,7 @@ import "@openzeppelin/contracts/token/ERC6909/extensions/draft-ERC6909TokenSuppl
 
 import {FullMath} from "@uniswap/v4-core/src/libraries/FullMath.sol";
 
-abstract contract CDS is ERC6909, ERC6909Metadata, ERC6909ContentURI, ERC6909TokenSupply {
+contract CDS is ERC6909, ERC6909Metadata, ERC6909ContentURI, ERC6909TokenSupply {
     
     error NotCDSFactory();
     
@@ -85,6 +85,7 @@ abstract contract CDS is ERC6909, ERC6909Metadata, ERC6909ContentURI, ERC6909Tok
 
         IERC20 stableCoin = _mentoStableCoinSelector.selectOptimalStableCoin(tokenId, businessId, countryCodeHash, metrics);
         address cdsPool = _cdsFactory.createCustomPool(
+            address(this),
             protectionSeller, // NOTE: Not fully determined yet, This is the pool creator
             address(this), // NOTE: This is the token, not sure if we have to provide a IERC20
             address(stableCoin),

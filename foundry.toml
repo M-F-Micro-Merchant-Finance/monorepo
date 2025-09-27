@@ -47,9 +47,6 @@ celo = "https://rpc.celo-community.org"
 celo_alfajores = "https://alfajores-rpc.celo-community.org"
 celo_baklava = "https://baklava-rpc.celo-community.org"
 
-[etherscan]
-celo = { key = "${CELO_API_KEY}" }
-celo_alfajores = { key = "${CELO_API_KEY}" }
-celo_baklava = { key = "${CELO_API_KEY}" }
+
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options

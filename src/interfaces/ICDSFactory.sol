@@ -6,10 +6,10 @@ import {Metrics} from "../types/Metrics.sol";
 import {ICDS} from "./ICDS.sol";
 import {IMerchantDataMediator} from "./IMerchantDataMediator.sol";
 
-import {IAlgebraPoolDeployer} from "@cryptoalgebra/integral-core/contracts/interfaces/IAlgebraPoolDeployer.sol";
 import {IAlgebraCustomPluginFactory} from "@cryptoalgebra/default-plugin/contracts/interfaces/IAlgebraCustomPluginFactory.sol";
 
-interface ICDSFactory is IAlgebraPoolDeployer, IAlgebraCustomPluginFactory {
+import {IAlgebraCustomPoolEntryPoint} from "@cryptoalgebra/integral-periphery/contracts/interfaces/IAlgebraCustomPoolEntryPoint.sol";
+interface ICDSFactory is IAlgebraCustomPoolEntryPoint {
     function merchantDataMediator() external view returns(IMerchantDataMediator);
     error CDSAlreadyDeployed(bytes32 creditAssesmentId);
 
