@@ -1,0 +1,54 @@
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.0;
+
+import "../helpers/CDSFactoryDeployers.sol";
+import "../helpers/AlgebraDeployers.sol";
+
+import {
+    IMerchantDataMediator,
+    MerchantDataMediator
+} from "../../src/MerchantDataMediator.sol";
+
+
+import {
+    MerchantIdentityVerificationMockDataGenerator
+} from "../helpers/MerchantIdentityVerificationMockDataGenerator.sol";
+
+
+import "../../src/types/Shared.sol";
+
+contract MerchantDataMediatorTest is Test, CDSFactoryDeployers, AlgebraDeployers, MerchantIdentityVerificationMockDataGenerator {
+    MerchantDataMediator public merchantDataMediator;
+    IMentoStableCoinSelector public mentoStableCoinSelector;
+    
+
+    function setUp() public{
+        deployFreshAlgebraFactoryAndPoolDeployer();
+        Always_cCOP_MentoSelector always_cCOP_MentoSelector = new Always_cCOP_MentoSelector();
+        mentoStableCoinSelector = IMentoStableCoinSelector(address(always_cCOP_MentoSelector));
+
+        deployCDSFactory(algebraFactory, mentoStableCoinSelector);
+        merchantDataMediator = new MerchantDataMediator(cdsFactory);
+        algebraFactory.grantRole(algebraFactory.CUSTOM_POOL_DEPLOYER(), address(cdsFactory));
+        algebraFactory.grantRole(algebraFactory.POOLS_ADMINISTRATOR_ROLE(), address(cdsFactory));
+        algebraFactory.grantRole(algebraFactory.CUSTOM_POOL_DEPLOYER(), address(merchantDataMediator));
+        algebraFactory.grantRole(algebraFactory.POOLS_ADMINISTRATOR_ROLE(), address(merchantDataMediator));
+        cdsFactory.setMerchantDataMediator(merchantDataMediator);
+
+    }
+
+    function test__dataWorks() public {
+        MerchantOnboardingData memory merchantOnboardingData = _generateMockMerchantOnboardingData();
+        bytes memory userData = abi.encode(merchantOnboardingData);
+        merchantDataMediator.onUserDataHook(userData);
+    }
+
+
+
+
+
+}
+
+
+
+

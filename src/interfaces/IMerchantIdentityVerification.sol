@@ -134,10 +134,9 @@ interface IMerchantIdentityVerification is  ISelfVerificationRoot{
     }
 
     event MerchantVerified(
+        uint256 indexed nullifier,
         address indexed merchant,
-        uint256 documentType,
-        uint256 timestamp,
-        uint256 nullifier
+        uint256 indexed documentType
     );
 
     event VerificationRevoked(
@@ -166,13 +165,9 @@ interface IMerchantIdentityVerification is  ISelfVerificationRoot{
     error InvalidMerchantAddress();
     error UnderageMerchant();
     
-    function verifyMerchantIdentity(
-        bytes calldata proofPayload,
-        bytes calldata userContextData
-    ) external;
+
 
     function setMinAgeRequirement(uint256 _minAgeRequirement) external;
-    function isVerifiedMerchant(bytes32 _creditAssesmentId) external view returns (bool);
 
 
 

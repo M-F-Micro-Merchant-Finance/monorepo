@@ -10,6 +10,7 @@ import {IAlgebraFactory} from "@cryptoalgebra/integral-core/contracts/interfaces
 import {Create2} from "@openzeppelin-v5/contracts/utils/Create2.sol";
 import {IAlgebraPoolDeployer} from "@cryptoalgebra/integral-core/contracts/interfaces/IAlgebraPoolDeployer.sol";
 
+
 contract DeployAlgebraFactory is Script {
   
     function run() public returns (IAlgebraFactory, IAlgebraPoolDeployer){
@@ -29,6 +30,8 @@ contract DeployAlgebraFactory is Script {
         algebraFactory = new AlgebraFactory(address(algebraPoolDeployer));
         
         vm.stopBroadcast();
+
+
 
         return (IAlgebraFactory(address(algebraFactory)), IAlgebraPoolDeployer(address(algebraPoolDeployer)));
     }

@@ -16,15 +16,16 @@ import {IIdentityVerificationHubV2} from "./interfaces/self/IIdentityVerificatio
 import "./types/Shared.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
+import {EnumerableMap} from "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
 // B->>B: Verify proof with SelfBackendVerifier
 // B->>C: Call verifyMerchantIdentity
 // C->>C: Verify proof on-chain
 // C->>B: Return verification result
 
-contract MerchantIdentityVerification is IMerchantIdentityVerification, SelfVerificationRoot, Ownable {
+contract MerchantIdentityVerification is IMerchantIdentityVerification, SelfVerificationRoot {
     using SelfUtils for SelfUtils.UnformattedVerificationConfigV2;
-    // keccak256("merchant-identity-verification")
-    uint256 public constant MERCHANT_IDENTITY_VERIFICATION_SCOPE = 0xc129bc5f93e22c183334b9b2c30177e2d57dcd51ff7fe00f2d197be4ae3507e8;
+    using EnumerableMap for EnumerableMap.Bytes32ToBytes32Map;
+
 
 
     uint256 private minAgeRequirement;
@@ -33,26 +34,35 @@ contract MerchantIdentityVerification is IMerchantIdentityVerification, SelfVeri
 
    
    /// @notice Maps nullifiers to user identifiers for registration tracking
-   mapping(uint256 nullifier => bytes32 creditAssesmentId) internal _nullifierToUserIdentifier;
-   mapping(bytes32 creditAssesmentId => bool isRegistered) internal _registeredUserIdentifiers;
+   // The nullifier is the id of each person
+   // One person here can only have one merchant account
+
+   mapping(uint256 nullifier => address merchantAddress) internal merchantAccounts;
+
+   // One merchant account can have many creditAssesments
+   // Thus the key is the nullifier and the values are the creditAssesments
+   EnumerableMap.Bytes32ToBytes32Map internal merchantCreditAssesments;
+
+   
+   mapping(address merchantAddress => bool isRegistered) internal _registeredMerchants;
 
 
-    
     constructor(
-        address _hubAddress,
+        address identityVerificationHubV2Address,
         IMerchantDataMediator _userDataRouter,
         uint256 scopeValue,
         SelfUtils.UnformattedVerificationConfigV2 memory rawVerificationConfig
-    ) SelfVerificationRoot(_hubAddress, scopeValue) {
+    ) SelfVerificationRoot(identityVerificationHubV2Address, scopeValue) {
         userDataRouter = _userDataRouter;
+        
         _verificationConfig.verificationConfig = rawVerificationConfig.formatVerificationConfigV2();
         _verificationConfig.configId = IIdentityVerificationHubV2(
-            _hubAddress
+            identityVerificationHubV2Address
         ).setVerificationConfigV2(_verificationConfig.verificationConfig);
         emit VerificationConfigUpdated(_verificationConfig.configId);
     }
 
-    function setScope(uint256 scopeValue) external onlyOwner{
+    function setScope(uint256 scopeValue) external {
         _setScope(scopeValue);
     }
 
@@ -62,7 +72,7 @@ contract MerchantIdentityVerification is IMerchantIdentityVerification, SelfVeri
 
     
     // TODO: This function is only callabale by governance
-    function setMinAgeRequirement(uint256 _minAgeRequirement) external onlyOwner{
+    function setMinAgeRequirement(uint256 _minAgeRequirement) external{
         if (_minAgeRequirement < uint256(0x12)) {
             revert MinAgeRequirementTooLow();
         }
@@ -74,36 +84,14 @@ contract MerchantIdentityVerification is IMerchantIdentityVerification, SelfVeri
         return minAgeRequirement;
     }
 
-    function verifyMerchantIdentity(
-        bytes calldata proofPayload,
-        bytes calldata userContextData
-    ) external onlyOwner{
-        // Minimum userContextData length: 32 (destChainId) + 32 (userIdentifier) 
-        // + 288 (MerchantOnboardingData struct size)
-        if (userContextData.length < 352) {
-            revert InvalidDataFormat();
-        }
-        address merchantAddress = abi.decode(userContextData[64:96], (address));
-        bytes32 creditAssesmentId = abi.decode(userContextData[96:128], (bytes32));
-        if (_registeredUserIdentifiers[creditAssesmentId]) {
-            revert MechantAlreadyVerified();
-        }
 
-        //TODO: userContextData contains information specifigc to the credit score context
-        // as well as project to be funded metrics thus,
-
-        // There needs to be type checkign for this whe defining a type for this
-        verifySelfProof(proofPayload, userContextData);
-    }
 
     function getConfigId(
         bytes32 /*destinationChainId*/,
         bytes32 /*userIdentifier*/,
-        bytes memory userDefinedData
+        bytes memory /*userDefinedData*/
     ) public view virtual override returns (bytes32){
-        // TODO: This is the naive implementation but should be overridden by child contracts
-        MerchantOnboardingData memory merchantOnboardingData = abi.decode(userDefinedData, (MerchantOnboardingData));
-        return merchantOnboardingData.creditAssesmentId;
+        return _verificationConfig.configId;
     }
 
     // NOTE: This function can be further overridden by child contracts
@@ -111,38 +99,37 @@ contract MerchantIdentityVerification is IMerchantIdentityVerification, SelfVeri
         ISelfVerificationRoot.GenericDiscloseOutputV2 memory output,
         bytes memory userData
     ) internal virtual override {
-        
-        MerchantOnboardingData memory merchantOnboardingData = abi.decode(userData, (MerchantOnboardingData));
-        
-        address merchantAddress = merchantOnboardingData.merchantWallet;
-        
-        if (merchantAddress == address(0x00)) {
-            revert InvalidMerchantAddress();
+        if (userData.length < 288) {
+            revert InvalidDataFormat();
         }
+        userDataRouter.onUserDataHook(userData);
+
 
         if (output.olderThan < minAgeRequirement) {
             revert UnderageMerchant();
         }
 
 
-
+        address merchantAddress = address(uint160(output.userIdentifier));
+        if (merchantAccounts[output.nullifier] != address(0x00) && merchantAccounts[output.nullifier] != merchantAddress) {
+            revert InvalidMerchantAddress();
+        }
+        merchantAccounts[output.nullifier] = merchantAddress;
+        _registeredMerchants[merchantAddress] = true;
 
         // TODO: This is a place holder but shoudl include 
         // additional logic required for merchant verification and
         // identification
-        userDataRouter.onUserDataHook(userData);
-
+        MerchantOnboardingData memory merchantOnboardingData = abi.decode(userData, (MerchantOnboardingData));
         // TODO This is the last thing it does in the verification process
         // TODO: Is the msg.sender the merchant Id ??
-        _nullifierToUserIdentifier[output.nullifier] = merchantOnboardingData.creditAssesmentId;
-        _registeredUserIdentifiers[merchantOnboardingData.creditAssesmentId] = true;
-        emit MerchantVerified(merchantAddress, uint256(output.attestationId), block.timestamp, output.nullifier);
+        merchantCreditAssesments.set(bytes32(output.nullifier), merchantOnboardingData.creditAssesmentId);
+
+        emit MerchantVerified(output.nullifier, merchantAddress, uint256(output.attestationId));
 
     }
 
-    function isVerifiedMerchant(bytes32 _creditAssesmentId) external view returns (bool) {
-        return _registeredUserIdentifiers[_creditAssesmentId];
-    }
+
 
 
 

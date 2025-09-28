@@ -7,6 +7,7 @@ import {Metrics} from "./types/Metrics.sol";
 import {CDS} from "./CDS.sol";
 import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
 import {IMerchantDataMediator} from "./interfaces/IMerchantDataMediator.sol";
+import {IERC20} from "forge-std/interfaces/IERC20.sol";
 
 import {AlgebraCustomPluginFactory} from "@cryptoalgebra/default-plugin/contracts/AlgebraCustomPluginFactory.sol";
 import {AlgebraPoolDeployer} from "@cryptoalgebra/integral-core/contracts/AlgebraPoolDeployer.sol";
@@ -38,7 +39,6 @@ contract CDSFactory is ICDSFactory, AlgebraCustomPoolEntryPoint {
         //NOTE: PlaceHolder for compilation 
         mentoStableCoinSelector = _mentoStableCoinSelector;
         CDS_IMPLEMENTATION = address(new CDS(
-            IMentoStableCoinSelector(mentoStableCoinSelector),
             ICDSFactory(address(this))
             )
         );
@@ -62,7 +62,17 @@ contract CDSFactory is ICDSFactory, AlgebraCustomPoolEntryPoint {
             keccak256(abi.encodePacked(creditAssesmentId, msg.sender))
         );
 
+        // Initialize the stable coin selector for the clone
+        
         ICDS(cdsInstance).issueCDSToken(protectionSeller, merchantWallet, businessId, countryCodeHash, creditAssesmentId, metrics);
+        IERC20 stableCoin = mentoStableCoinSelector.selectOptimalStableCoin(uint256(creditAssesmentId), businessId, countryCodeHash, metrics);
+        address cdsPool = merchantDataMediator.createCustomPool(
+            protectionSeller,
+            address(cdsInstance),
+            address(stableCoin),
+            abi.encode(creditAssesmentId)
+        );
+       
         _deployedCDS[creditAssesmentId] = cdsInstance;
         _isCDSDeployed[cdsInstance] = true;
         emit CDSCreated(creditAssesmentId, cdsInstance);

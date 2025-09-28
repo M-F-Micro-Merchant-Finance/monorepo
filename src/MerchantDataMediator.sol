@@ -38,7 +38,10 @@ import {EnumerableMap} from "@openzeppelin/contracts/utils/structs/EnumerableMap
 import {ICDSFactory} from "./interfaces/ICDSFactory.sol";
 import {AlgebraCustomPoolEntryPoint} from "@cryptoalgebra/integral-periphery/contracts/AlgebraCustomPoolEntryPoint.sol";
 
-contract MerchantDataMediator is IMerchantDataMediator, AlgebraCustomPoolEntryPoint {
+import {AlgebraCustomPluginFactory} from "@cryptoalgebra/default-plugin/contracts/AlgebraCustomPluginFactory.sol";
+
+
+contract MerchantDataMediator is IMerchantDataMediator, AlgebraCustomPluginFactory {
     using CreditRiskLibrary for CreditRisk;
     using BusinessFundamentalsLibrary for BusinessFundamentals;
     using FinancialHealthLibrary for FinancialHealth;
@@ -51,7 +54,7 @@ contract MerchantDataMediator is IMerchantDataMediator, AlgebraCustomPoolEntryPo
 
     constructor(
         ICDSFactory _cdsFactory
-    ) AlgebraCustomPoolEntryPoint(_cdsFactory.factory()) {
+    ) AlgebraCustomPluginFactory(_cdsFactory.factory(), address(_cdsFactory)) {
         cdsFactory = _cdsFactory;
     }
  

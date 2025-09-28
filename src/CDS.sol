@@ -33,12 +33,11 @@ contract CDS is ERC6909, ERC6909Metadata, ERC6909ContentURI, ERC6909TokenSupply 
     error NotCDSFactory();
     
     ICDSFactory internal immutable _cdsFactory;
-    IMentoStableCoinSelector internal _mentoStableCoinSelector;
-
-    constructor(IMentoStableCoinSelector __mentoStableCoinSelector, ICDSFactory __cdsFactory) {
+    
+    constructor(ICDSFactory __cdsFactory) {
         _cdsFactory = __cdsFactory;
-        _mentoStableCoinSelector = __mentoStableCoinSelector;
     }
+
 
     modifier onlyCDSFactory() {
         if (_msgSender() != address(_cdsFactory)) {
@@ -50,6 +49,8 @@ contract CDS is ERC6909, ERC6909Metadata, ERC6909ContentURI, ERC6909TokenSupply 
     function cdsFactory() external view returns(ICDSFactory) {
         return _cdsFactory;
     }
+
+    // TODO: This should return the address of the IERC20 that represents the CDS
 
 
     function issueCDSToken(address protectionSeller, address merchantWallet, bytes32 businessId, bytes32 countryCodeHash, bytes32 creditAssesmentId, Metrics memory metrics)
@@ -83,14 +84,8 @@ contract CDS is ERC6909, ERC6909Metadata, ERC6909ContentURI, ERC6909TokenSupply 
             _setOperator(merchantWallet, protectionSeller, true);
         }
 
-        IERC20 stableCoin = _mentoStableCoinSelector.selectOptimalStableCoin(tokenId, businessId, countryCodeHash, metrics);
-        address cdsPool = _cdsFactory.createCustomPool(
-            address(this),
-            protectionSeller, // NOTE: Not fully determined yet, This is the pool creator
-            address(this), // NOTE: This is the token, not sure if we have to provide a IERC20
-            address(stableCoin),
-            abi.encode(tokenId)
-        );
+        
+        
     
     }
 
@@ -101,11 +96,11 @@ contract CDS is ERC6909, ERC6909Metadata, ERC6909ContentURI, ERC6909TokenSupply 
 
     function _calculateTotalSupply(Metrics memory metrics) internal virtual returns (uint256) {
         uint256 baseSupply = _calculateBaseSupply(metrics);
-        uint8 riskMultipliers   =uint8(_calculateCreditRiskMultiplier(metrics));
-        uint8 marketAdjustments = uint8(_calculateMarketAdjustment(metrics));
-        uint8 businessFactor = uint8(_calculateBusinessFactor(metrics));
+        uint256 riskMultiplier = _calculateCreditRiskMultiplier(metrics);
+        uint256 marketAdjustment = _calculateMarketAdjustment(metrics);
+        uint256 businessFactor = _calculateBusinessFactor(metrics);
         uint256 _totalSupply = FullMath.mulDiv(
-            baseSupply, uint256(riskMultipliers*marketAdjustments*businessFactor), 1000000
+            baseSupply, riskMultiplier * marketAdjustment * businessFactor, 10000000000 // 10000 * 10000 * 10000 for basis points
         );
         return _totalSupply;
     }
