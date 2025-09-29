@@ -78,15 +78,13 @@ contract CDS is ERC6909, ERC6909Metadata, ERC6909ContentURI, ERC6909TokenSupply 
             _setTokenURI(tokenId, "https://api.cds.com/");
 
         }
+        //==================ERC-20 Minting==================================
         _mint(merchantWallet, tokenId, _totalSupply);
 
         {
             _setOperator(merchantWallet, protectionSeller, true);
         }
 
-        
-        
-    
     }
 
     function _update(address from, address to, uint256 id, uint256 amount) internal virtual override(ERC6909, ERC6909TokenSupply) {

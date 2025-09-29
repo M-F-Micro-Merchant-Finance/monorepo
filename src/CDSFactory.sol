@@ -17,6 +17,9 @@ import {IMentoStableCoinSelector} from "./interfaces/IMentoStableCoinSelector.so
 import {IAlgebraFactory} from "@cryptoalgebra/integral-core/contracts/interfaces/IAlgebraFactory.sol";
 import {AlgebraCustomPoolEntryPoint} from "@cryptoalgebra/integral-periphery/contracts/AlgebraCustomPoolEntryPoint.sol";
 
+import {console2} from "forge-std/console2.sol";
+
+import {IERC20} from "forge-std/interfaces/IERC20.sol";
 
 contract CDSFactory is ICDSFactory, AlgebraCustomPoolEntryPoint {
     using Clones for address;
@@ -66,6 +69,12 @@ contract CDSFactory is ICDSFactory, AlgebraCustomPoolEntryPoint {
         
         ICDS(cdsInstance).issueCDSToken(protectionSeller, merchantWallet, businessId, countryCodeHash, creditAssesmentId, metrics);
         IERC20 stableCoin = mentoStableCoinSelector.selectOptimalStableCoin(uint256(creditAssesmentId), businessId, countryCodeHash, metrics);
+        console2.log(
+            "Algebra Factory used:",
+            address(factory)
+        );
+
+
         address cdsPool = merchantDataMediator.createCustomPool(
             protectionSeller,
             address(cdsInstance),

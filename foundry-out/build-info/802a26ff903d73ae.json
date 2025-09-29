@@ -1,0 +1,1 @@
+{"id":"802a26ff903d73ae","source_id_to_path":{"0":"lib/mento-core/contracts/interfaces/IReserve.sol","1":"src/interfaces/ICurrencyCollateralValidator.sol","2":"src/interfaces/IValidationStrategy.sol"},"language":"Solidity"}

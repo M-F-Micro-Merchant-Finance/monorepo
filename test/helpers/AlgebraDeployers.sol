@@ -16,54 +16,38 @@ import {
     IAlgebraPoolDeployer
 } from "@cryptoalgebra/integral-core/contracts/AlgebraPoolDeployer.sol";
 
-
-
 contract AlgebraDeployers is Test {
     AlgebraFactory public algebraFactory;
     AlgebraPoolDeployer public algebraPoolDeployer;
- 
 
-
-    function deployFreshAlgebraFactoryAndPoolDeployer() public returns(IAlgebraFactory, IAlgebraPoolDeployer){
+    function deployFreshAlgebraFactoryAndPoolDeployer(address _deployerAddress) public returns(IAlgebraFactory, IAlgebraPoolDeployer){
         // To resolve the circular dependency between Factory and PoolDeployer,
-        // we'll use a three-step process:
-        // 1. Create temporary factory with a placeholder deployer address
-        address placeholderDeployer = address(0x1);
-        AlgebraFactory tempFactory = new AlgebraFactory(placeholderDeployer);
+        // we'll use the official Algebra pattern with CREATE address precomputation:
+        // 1. Precompute the pool deployer address using the next nonce + 1 (second contract)
+        // 2. Deploy the factory with the precomputed pool deployer address
+        // 3. Deploy the pool deployer with the actual factory address
         
-        // 2. Create the final PoolDeployer with the tempFactory address
-        //    This ensures the deployer expects calls from tempFactory
-        algebraPoolDeployer = new AlgebraPoolDeployer(address(tempFactory));
-        
-        // 3. Create the final Factory with the final PoolDeployer address
-        algebraFactory = new AlgebraFactory(address(algebraPoolDeployer));
-        
-        // At this point, there's still a mismatch: 
-        // - algebraPoolDeployer expects calls from tempFactory
-        // - algebraFactory will make calls but has the deployer address
-        
-        // The proper way to handle this is to have the final deployer expect
-        // calls from the final factory. So let's do this in the proper order:
-        
-        // Create final pool deployer that expects calls from a temporary factory
-        algebraPoolDeployer = new AlgebraPoolDeployer(address(0x2)); // temporary factory address
-        
-        // Create the final factory that will use the deployer
-        algebraFactory = new AlgebraFactory(address(algebraPoolDeployer));
-        
-        // Now recreate the deployer to work with the actual factory
+        // Step 1: Precompute pool deployer address using CREATE address computation
+        // We need the address of the SECOND contract that will be deployed (pool deployer)
+        // So we use current nonce + 1
+        address poolDeployerAddress = vm.computeCreateAddress(
+            _deployerAddress, 
+            vm.getNonce(_deployerAddress) + 1
+        );
+                
+        // Step 2: Deploy factory with precomputed pool deployer address
+        vm.startPrank(_deployerAddress);
+        algebraFactory = new AlgebraFactory(poolDeployerAddress);
+        // Step 3: Deploy pool deployer with actual factory address
         algebraPoolDeployer = new AlgebraPoolDeployer(address(algebraFactory));
+        vm.stopPrank();
         
-        // Now recreate the factory to work with the actual deployer
-        algebraFactory = new AlgebraFactory(address(algebraPoolDeployer));
+        // Verify the addresses match
+        require(address(algebraPoolDeployer) == poolDeployerAddress, "Address mismatch");
+        require(algebraFactory.poolDeployer() == address(algebraPoolDeployer), "Factory pool deployer mismatch");
         
         return (IAlgebraFactory(address(algebraFactory)), IAlgebraPoolDeployer(address(algebraPoolDeployer)));
     }
-
-
-
-    
-    
 }
 
 

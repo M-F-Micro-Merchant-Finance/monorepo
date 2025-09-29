@@ -9,7 +9,8 @@ import {
     MerchantDataMediator
 } from "../../src/MerchantDataMediator.sol";
 
-
+import {ICollateralFilter} from "../../src/interfaces/ICollateralFilter.sol";
+import {CollateralFilter} from "../../src/CollateralFilter.sol";
 import {
     MerchantIdentityVerificationMockDataGenerator
 } from "../helpers/MerchantIdentityVerificationMockDataGenerator.sol";
@@ -20,15 +21,21 @@ import "../../src/types/Shared.sol";
 contract MerchantDataMediatorTest is Test, CDSFactoryDeployers, AlgebraDeployers, MerchantIdentityVerificationMockDataGenerator {
     MerchantDataMediator public merchantDataMediator;
     IMentoStableCoinSelector public mentoStableCoinSelector;
-    
+    ICollateralFilter public collateralFilter;
+
+    address public merchantWallet = makeAddr("merchant");
+    address public protectionSeller = makeAddr("protection_seller");
 
     function setUp() public{
-        deployFreshAlgebraFactoryAndPoolDeployer();
+        deployFreshAlgebraFactoryAndPoolDeployer(address(this));
+        CollateralFilter _collateralFilter = new CollateralFilter();
+        collateralFilter = ICollateralFilter(address(_collateralFilter));
         Always_cCOP_MentoSelector always_cCOP_MentoSelector = new Always_cCOP_MentoSelector();
         mentoStableCoinSelector = IMentoStableCoinSelector(address(always_cCOP_MentoSelector));
 
         deployCDSFactory(algebraFactory, mentoStableCoinSelector);
-        merchantDataMediator = new MerchantDataMediator(cdsFactory);
+        merchantDataMediator = new MerchantDataMediator(cdsFactory, collateralFilter);
+        
         algebraFactory.grantRole(algebraFactory.CUSTOM_POOL_DEPLOYER(), address(cdsFactory));
         algebraFactory.grantRole(algebraFactory.POOLS_ADMINISTRATOR_ROLE(), address(cdsFactory));
         algebraFactory.grantRole(algebraFactory.CUSTOM_POOL_DEPLOYER(), address(merchantDataMediator));
@@ -37,7 +44,21 @@ contract MerchantDataMediatorTest is Test, CDSFactoryDeployers, AlgebraDeployers
 
     }
 
-    function test__dataWorks() public {
+    function test__merchantOnboarding__mechantHasNotBeenOnboarded() public {
+        MerchantOnboardingData memory merchantOnboardingData = _generateMockMerchantOnboardingData();
+        vm.label(merchantWallet, "merchant");
+        vm.label(protectionSeller, "protection_seller");
+        vm.label(merchantOnboardingData.collateralAddress, "collateral");
+        vm.label(merchantOnboardingData.creditAssesmentId, "credit_assessment_001");
+        vm.label(merchantOnboardingData.businessId, "Green Valley Farm");
+        vm.label(merchantOnboardingData.countryCodeHash, "KE");
+        vm.label(merchantOnboardingData.protectionSeller, "protection_seller");
+        // NOTE: t
+        
+    }
+
+
+    function test__merchantOnboarding__fromUserDataToPoolCreationSuccess() public {
         MerchantOnboardingData memory merchantOnboardingData = _generateMockMerchantOnboardingData();
         bytes memory userData = abi.encode(merchantOnboardingData);
         merchantDataMediator.onUserDataHook(userData);

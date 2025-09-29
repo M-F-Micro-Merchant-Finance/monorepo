@@ -41,7 +41,19 @@ import {AlgebraCustomPoolEntryPoint} from "@cryptoalgebra/integral-periphery/con
 import {AlgebraCustomPluginFactory} from "@cryptoalgebra/default-plugin/contracts/AlgebraCustomPluginFactory.sol";
 
 
-contract MerchantDataMediator is IMerchantDataMediator, AlgebraCustomPluginFactory {
+import {console2} from "forge-std/console2.sol";
+
+import {ICollateralFilter} from "./interfaces/ICollateralFilter.sol";
+
+import {Currency} from "@uniswap/v4-core/src/types/Currency.sol";
+
+import {CollateralModule} from "@synthetixio/synthetix/contracts/modules/core/CollateralModule.sol";
+import {
+    Collateral,
+    CollateralType
+} from "./types/Shared.sol";
+
+contract MerchantDataMediator is IMerchantDataMediator, AlgebraCustomPluginFactory, CollateralModule {
     using CreditRiskLibrary for CreditRisk;
     using BusinessFundamentalsLibrary for BusinessFundamentals;
     using FinancialHealthLibrary for FinancialHealth;
@@ -51,11 +63,15 @@ contract MerchantDataMediator is IMerchantDataMediator, AlgebraCustomPluginFacto
 
 
     ICDSFactory public immutable cdsFactory;
-
+    ICollateralFilter public immutable collateralFilter;
+    
     constructor(
-        ICDSFactory _cdsFactory
+        ICDSFactory _cdsFactory,
+        ICollateralFilter _collateralFilter
+
     ) AlgebraCustomPluginFactory(_cdsFactory.factory(), address(_cdsFactory)) {
         cdsFactory = _cdsFactory;
+        collateralFilter = _collateralFilter;
     }
  
  
@@ -90,6 +106,12 @@ contract MerchantDataMediator is IMerchantDataMediator, AlgebraCustomPluginFacto
         (address protectionSeller, address merchantWallet) = (merchantOnboardingData.protectionSeller, merchantOnboardingData.merchantWallet);
         Metrics memory metrics = merchantOnboardingData.buildMetrics();
         creditAssesmentMetrics[merchantOnboardingData.creditAssesmentId] = metrics;
+        // NOTE: Validate the collateral
+        collateralFilter.addToWhitelist(Collateral({
+            currency: Currency.wrap(merchantOnboardingData.collateralAddress),
+            collateralType: CollateralType(merchantOnboardingData.collateralType)
+        }));
+
 
         cdsFactory.createCDS(
             protectionSeller,
@@ -98,5 +120,17 @@ contract MerchantDataMediator is IMerchantDataMediator, AlgebraCustomPluginFacto
             merchantOnboardingData.countryCodeHash,
             merchantOnboardingData.creditAssesmentId, metrics
         );
+
+
+        // NOTE: Update the business location mapping
+        businessIdToCountryCodeHash[merchantOnboardingData.businessId] = merchantOnboardingData.countryCodeHash;
+        // NOTE: Added  one more credit assesment to the business
+        creditAssesmentIdsPerBusinessId.set(merchantOnboardingData.businessId, merchantOnboardingData.creditAssesmentId);
+        // NOTE: Added the collateral used for the credit assesment
+        creditAssesmentIdToCollateral[merchantOnboardingData.creditAssesmentId] = Collateral({
+            currency: Currency.wrap(merchantOnboardingData.collateralAddress),
+            collateralType: CollateralType(merchantOnboardingData.collateralType)
+        });
+
     }
 }

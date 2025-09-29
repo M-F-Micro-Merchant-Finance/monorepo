@@ -5,8 +5,8 @@ pragma solidity ^0.8.0;
 import {IMentoStableCoinSelector} from "../interfaces/IMentoStableCoinSelector.sol";
 import {Metrics} from "../types/Metrics.sol";
 
-import {IERC20} from "forge-std/interfaces/IERC20.sol";
 
+import {IERC20} from "forge-std/interfaces/IERC20.sol";
 contract Always_cCOP_MentoSelector is IMentoStableCoinSelector {
  
    

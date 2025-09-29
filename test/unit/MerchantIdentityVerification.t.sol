@@ -39,7 +39,7 @@ contract MerchantIdentityVerificationTest is Test, MerchantIdentityVerificationM
     address public hub;
 
     function setUp() public {
-        deployFreshAlgebraFactoryAndPoolDeployer();
+        deployFreshAlgebraFactoryAndPoolDeployer(address(this));
         Always_cCOP_MentoSelector always_cCOP_MentoSelector = new Always_cCOP_MentoSelector();
         mentoStableCoinSelector = IMentoStableCoinSelector(address(always_cCOP_MentoSelector));
 
@@ -60,10 +60,5 @@ contract MerchantIdentityVerificationTest is Test, MerchantIdentityVerificationM
         // algebraFactory.grantRole(algebraFactory.POOLS_ADMINISTRATOR_ROLE(), address(merchantDataMediator));
     }
 
-    function test__verifyMerchantIdentity() public {
-        bytes memory proofPayload = _generateMockProofPayload();
-        bytes memory userContextData = _generateMockUserContextData();
-        // merchantIdentityVerification.verifyMerchantIdentity(proofPayload, userContextData);
-    }
 
 }

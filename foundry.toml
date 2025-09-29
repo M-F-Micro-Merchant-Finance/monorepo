@@ -32,20 +32,25 @@ remappings = [
     "@uniswap/v4-periphery/=lib/v4-periphery/",
     "@openzeppelin/=lib/openzeppelin-contracts/",
     "@openzeppelin-v5/=lib/openzeppelin-contracts-v5/",
+    "@Cyfrin/foundry-devops/=lib/foundry-devops/src/",
+    "@synthetixio/core-contracts/=lib/synthetix-v3/utils/core-contracts/",
+    "@synthetixio/core-modules/=lib/synthetix-v3/utils/core-modules/",
+    "@synthetixio/synthetix/=lib/synthetix-v3/protocol/synthetix/",
+    "@synthetixio/oracle-manager/=lib/synthetix-v3/protocol/oracle-manager/",
+    "@synthetixio/governance/=lib/synthetix-v3/protocol/governance/",
     "forge-std/=lib/forge-std/src/",
-    "mento-core/=lib/mento-core/",
-    "mento-deployment/=lib/mento-deployment/",
-    "mento-std/=lib/mento-std/",
-    "mento-router/=lib/mento-router/",
+    "@mento/core/=lib/mento-core/",
+    "@mento/periphery/=lib/mento-router/",
+    "@mento/std/=lib/mento-std/",
     "governance-tests/=lib/governance-tests/",
     "oracle-v2-playground/=lib/oracle-v2-playground/",
-    "@Cyfrin/foundry-devops/=lib/foundry-devops/src/"
+    
 ]
 
 [rpc_endpoints]
-celo = "https://rpc.celo-community.org"
-celo_alfajores = "https://alfajores-rpc.celo-community.org"
-celo_baklava = "https://baklava-rpc.celo-community.org"
+
+celo = "https://celo-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}"
+celo_sepolia="https://celo-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}"
 
 
 

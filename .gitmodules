@@ -44,3 +44,6 @@
 [submodule "lib/openzeppelin-contracts-v5"]
 	path = lib/openzeppelin-contracts-v5
 	url = https://github.com/OpenZeppelin/openzeppelin-contracts.git
+[submodule "lib/synthetix-v3"]
+	path = lib/synthetix-v3
+	url = https://github.com/Synthetixio/synthetix-v3
