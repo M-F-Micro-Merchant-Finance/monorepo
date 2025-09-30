@@ -52,8 +52,15 @@ import {
     Collateral,
     CollateralType
 } from "./types/Shared.sol";
+import {
+    CreditAssesmentManager,
+    ICreditAssesmentManager
+} from "./CreditAssesmentManager.sol";
 
-contract MerchantDataMediator is IMerchantDataMediator, AlgebraCustomPluginFactory, CollateralModule {
+import {Create2} from "@openzeppelin/contracts/utils/Create2.sol";
+
+
+contract MerchantDataMediator is IMerchantDataMediator, AlgebraCustomPluginFactory{
     using CreditRiskLibrary for CreditRisk;
     using BusinessFundamentalsLibrary for BusinessFundamentals;
     using FinancialHealthLibrary for FinancialHealth;
@@ -89,28 +96,20 @@ contract MerchantDataMediator is IMerchantDataMediator, AlgebraCustomPluginFacto
     // One businessId has one to many creditAssesmentId
     // Thus this is a enumerableMapping with keys businessId
 
-    EnumerableMap.Bytes32ToBytes32Map private creditAssesmentIdsPerBusinessId;
-    
-    // NOTE: One creditAssesment has one colleteral thus this is a mapping
-    // mapping(bytes32 creditAssesmentId => Collateral collateral)
-    mapping(bytes32 creditAssesmentId => Collateral collateral) private creditAssesmentIdToCollateral;
-
-    // NOTE: One creditAssesment has one metrics thus this is a mapping
-    // mapping(bytes32 creditAssesmentId => Metrics metrics)
-    mapping(bytes32 creditAssesmentId => Metrics metrics) private creditAssesmentMetrics;
-
+    // TODO: This seems to be a conract
+    mapping (bytes32 countryHash => mapping(bytes32 businessId => ICreditAssesmentManager creditAssesmentManager)) private creditAssesmentManagerPerCountryHashAndBusinessId;
+  
 
     function onUserDataHook(bytes memory userData) external {
         
         MerchantOnboardingData memory merchantOnboardingData = abi.decode(userData, (MerchantOnboardingData));
         (address protectionSeller, address merchantWallet) = (merchantOnboardingData.protectionSeller, merchantOnboardingData.merchantWallet);
         Metrics memory metrics = merchantOnboardingData.buildMetrics();
-        creditAssesmentMetrics[merchantOnboardingData.creditAssesmentId] = metrics;
         // NOTE: Validate the collateral
-        collateralFilter.addToWhitelist(Collateral({
-            currency: Currency.wrap(merchantOnboardingData.collateralAddress),
-            collateralType: CollateralType(merchantOnboardingData.collateralType)
-        }));
+        // collateralFilter.addToWhitelist(Collateral({
+        //     currency: Currency.wrap(merchantOnboardingData.collateralAddress),
+        //     collateralType: CollateralType(merchantOnboardingData.collateralType)
+        // }));
 
 
         cdsFactory.createCDS(
@@ -118,19 +117,52 @@ contract MerchantDataMediator is IMerchantDataMediator, AlgebraCustomPluginFacto
             merchantWallet,
             merchantOnboardingData.businessId,
             merchantOnboardingData.countryCodeHash,
-            merchantOnboardingData.creditAssesmentId, metrics
+            merchantOnboardingData.creditAssesmentId,
+            metrics
         );
+
+        bytes memory constructorArgs = abi.encode(merchantOnboardingData.businessId, merchantOnboardingData.countryCodeHash);
+        bytes memory bytecode = abi.encodePacked(
+            type(CreditAssesmentManager).creationCode,
+            constructorArgs
+        );
+        address creditAssesmentManagerAddress = Create2.deploy(
+            uint256(0x00),
+            keccak256(constructorArgs),
+            bytecode
+        );
+        creditAssesmentManagerPerCountryHashAndBusinessId[merchantOnboardingData.countryCodeHash][merchantOnboardingData.businessId] = ICreditAssesmentManager(creditAssesmentManagerAddress);
 
 
         // NOTE: Update the business location mapping
         businessIdToCountryCodeHash[merchantOnboardingData.businessId] = merchantOnboardingData.countryCodeHash;
+        businessesPerCountry.set(merchantOnboardingData.countryCodeHash, merchantOnboardingData.businessId);
         // NOTE: Added  one more credit assesment to the business
-        creditAssesmentIdsPerBusinessId.set(merchantOnboardingData.businessId, merchantOnboardingData.creditAssesmentId);
-        // NOTE: Added the collateral used for the credit assesment
-        creditAssesmentIdToCollateral[merchantOnboardingData.creditAssesmentId] = Collateral({
+
+
+        creditAssesmentManagerPerCountryHashAndBusinessId[merchantOnboardingData.countryCodeHash][merchantOnboardingData.businessId].setCollateralInfo(merchantOnboardingData.creditAssesmentId, Collateral({
             currency: Currency.wrap(merchantOnboardingData.collateralAddress),
             collateralType: CollateralType(merchantOnboardingData.collateralType)
-        });
-
+        }));
+        creditAssesmentManagerPerCountryHashAndBusinessId[merchantOnboardingData.countryCodeHash][merchantOnboardingData.businessId].setMetrics(merchantOnboardingData.creditAssesmentId, metrics);
+        
     }
+
+    function getBusinessCountryById(bytes32 businessId) external view returns (bytes32) {
+        return businessIdToCountryCodeHash[businessId];
+    }
+    function getCreditAssesmentMetrics(bytes32 businessId, bytes32 countryHash, bytes32 creditAssesmentId) external view returns (Metrics memory metrics) {
+        return creditAssesmentManagerPerCountryHashAndBusinessId[countryHash][businessId].getMetrics(creditAssesmentId);
+    }
+    function getCreditAssesmentCollateral(bytes32 businessId, bytes32 countryHash, bytes32 creditAssesmentId) external view returns (Collateral memory collateral) {
+        return creditAssesmentManagerPerCountryHashAndBusinessId[countryHash][businessId].getCollateralInfo(creditAssesmentId);
+    }
+    // function getTotalBusinessesOfCountry(bytes32 countryHash) external view returns (uint256) {
+    //     return businessesPerCountry.length(countryHash);
+    // }
+    function getTotalCountries() external view returns (uint256) {
+        return businessesPerCountry.length();
+    }
+
+
 }

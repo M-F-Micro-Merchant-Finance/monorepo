@@ -1,260 +1,361 @@
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { BusinessInformationStep } from './steps/BusinessInformationStep';
-import { FinancialInformationStep } from './steps/FinancialInformationStep';
-import { SelfVerificationStep } from './steps/SelfVerificationStep';
-import { ReviewAndSubmitStep } from './steps/ReviewAndSubmitStep';
+'use client'
 
-const merchantOnboardingSchema = z.object({
-  // Business Information
-  businessName: z.string().min(2, 'Business name must be at least 2 characters'),
-  businessType: z.enum(['sole_proprietorship', 'partnership', 'corporation', 'llc', 'other']),
-  industry: z.string().min(2, 'Industry is required'),
-  businessAge: z.number().min(0).max(100, 'Invalid business age'),
-  legalStructure: z.enum(['formal', 'informal']),
-  registrationStatus: z.enum(['registered', 'unregistered']),
+import { useState, useEffect } from 'react'
+import { useAccount } from 'wagmi'
+import { ConnectButton } from '@rainbow-me/rainbowkit'
+import { MerchantOnboardingData, CollateralType } from '@/types'
+import { useSelfProtocol } from '@/hooks/useSelfProtocol'
+import { COUNTRY_CODES } from '@/utils/countryCodes'
+import { generateCreditAssessmentId, hashBusinessData } from '@/utils/hashing'
+import QRCodeDisplay from './QRCodeDisplay'
+
+export default function MerchantOnboardingForm() {
+  const { address, isConnected } = useAccount()
+  const { startVerification, isVerifying, verificationData } = useSelfProtocol()
   
-  // Financial Information
-  monthlyRevenue: z.object({
-    current: z.number().min(0),
-    average: z.number().min(0),
-    growthRate: z.number().min(-100).max(1000),
-    seasonality: z.enum(['low', 'medium', 'high'])
-  }),
-  monthlyExpenses: z.object({
-    fixed: z.number().min(0),
-    variable: z.number().min(0),
-    total: z.number().min(0)
-  }),
-  cashFlow: z.object({
-    operating: z.number(),
-    free: z.number(),
-    workingCapital: z.number().min(0)
-  }),
-  balanceSheet: z.object({
-    totalAssets: z.number().min(0),
-    currentAssets: z.number().min(0),
-    totalLiabilities: z.number().min(0),
-    currentLiabilities: z.number().min(0),
-    equity: z.number()
-  }),
-  
-  // Funding Intentions
-  fundIntention: z.object({
-    purpose: z.enum(['working_capital', 'equipment', 'expansion', 'inventory', 'other']),
-    amount: z.object({
-      requested: z.number().min(0),
-      minimum: z.number().min(0),
-      maximum: z.number().min(0)
-    }),
-    duration: z.object({
-      preferred: z.number().min(1).max(60),
-      minimum: z.number().min(1).max(60),
-      maximum: z.number().min(1).max(60)
-    }),
-    repaymentCapacity: z.object({
-      monthlyCapacity: z.number().min(0),
-      percentageOfRevenue: z.number().min(0).max(100)
-    }),
-    collateral: z.object({
-      available: z.boolean(),
-      type: z.enum(['equipment', 'real_estate', 'inventory', 'crypto', 'other']),
-      value: z.number().min(0),
-      liquidity: z.enum(['low', 'medium', 'high'])
-    })
-  }),
-  
-  // Risk Factors
-  riskFactors: z.object({
-    marketRisk: z.enum(['low', 'medium', 'high']),
-    operationalRisk: z.enum(['low', 'medium', 'high']),
-    financialRisk: z.enum(['low', 'medium', 'high']),
-    economicSensitivity: z.enum(['low', 'medium', 'high']),
-    regulatoryRisk: z.enum(['low', 'medium', 'high']),
-    currencyRisk: z.enum(['low', 'medium', 'high']),
-    paymentHistory: z.object({
-      onTime: z.number().min(0).max(100),
-      late: z.number().min(0).max(100),
-      default: z.number().min(0).max(100)
-    }),
-    industryRisks: z.array(z.string())
-  }),
-  
-  // Market Context
-  marketContext: z.object({
-    primaryMarket: z.string().length(2, 'Country code must be 2 characters'),
-    operatingRegions: z.array(z.string().length(2)),
-    marketSize: z.enum(['micro', 'small', 'medium', 'large']),
-    competitionLevel: z.enum(['low', 'medium', 'high']),
-    marketGrowth: z.enum(['declining', 'stable', 'growing', 'rapidly_growing'])
-  }),
-  
-  // Compliance Profile
-  complianceProfile: z.object({
-    kycLevel: z.enum(['basic', 'enhanced', 'comprehensive']),
-    amlRisk: z.enum(['low', 'medium', 'high']),
-    regulatoryRequirements: z.array(z.string()),
-    jurisdiction: z.string().length(2, 'Jurisdiction must be 2 characters')
-  }),
-  
-  // Identity Verification Result
-  verificationResult: z.object({
-    verified: z.boolean(),
-    payload: z.object({
-      attestations: z.record(z.object({
-        value: z.any()
+  const [formData, setFormData] = useState<MerchantOnboardingData>({
+    businessName: '',
+    countryCode: '',
+    businessId: '',
+    countryCodeHash: '',
+    creditAssesmentId: '', // Will be auto-generated
+    collateralAddress: '',
+    collateralType: CollateralType.CURRENCY,
+    protectionSeller: '',
+    merchantWallet: '',
+    creditScore: 0,
+    defaultProbability: 0,
+    lossGivenDefault: 0,
+    recoveryRate: 0,
+    businessAgeScore: 0,
+    revenueStabilityScore: 0,
+    marketPositionScore: 0,
+    industryRiskScore: 0,
+    regulatoryComplianceScore: 0,
+    liquidityScore: 0,
+    leverageScore: 0,
+    cashFlowScore: 0,
+    profitabilityScore: 0,
+    marketVolatility: 0,
+    economicCyclePosition: 1,
+    regulatoryStability: 1,
+    seasonality: 1,
+  })
+
+  const [showQR, setShowQR] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
+
+  // Set mounted state to prevent hydration issues
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  // Auto-fill wallet address when connected
+  useEffect(() => {
+    if (isConnected && address) {
+      setFormData(prev => ({
+        ...prev,
+        merchantWallet: address
       }))
-    })
-  }).optional()
-});
-
-export type MerchantOnboardingFormData = z.infer<typeof merchantOnboardingSchema>;
-
-const STEPS = [
-  { id: 1, name: 'Business Information', description: 'Basic business details' },
-  { id: 2, name: 'Financial Information', description: 'Financial metrics and data' },
-  { id: 3, name: 'Identity Verification', description: 'Verify identity with Self Protocol' },
-  { id: 4, name: 'Review & Submit', description: 'Review and submit application' }
-];
-
-export function MerchantOnboardingForm() {
-  const [currentStep, setCurrentStep] = useState(1);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  const form = useForm<MerchantOnboardingFormData>({
-    resolver: zodResolver(merchantOnboardingSchema),
-    defaultValues: {
-      businessAge: 0,
-      monthlyRevenue: { current: 0, average: 0, growthRate: 0, seasonality: 'low' },
-      monthlyExpenses: { fixed: 0, variable: 0, total: 0 },
-      cashFlow: { operating: 0, free: 0, workingCapital: 0 },
-      balanceSheet: { totalAssets: 0, currentAssets: 0, totalLiabilities: 0, currentLiabilities: 0, equity: 0 },
-      fundIntention: {
-        purpose: 'working_capital',
-        amount: { requested: 0, minimum: 0, maximum: 0 },
-        duration: { preferred: 12, minimum: 6, maximum: 18 },
-        repaymentCapacity: { monthlyCapacity: 0, percentageOfRevenue: 0 },
-        collateral: { available: false, type: 'equipment', value: 0, liquidity: 'medium' }
-      },
-      riskFactors: {
-        marketRisk: 'medium',
-        operationalRisk: 'medium',
-        financialRisk: 'medium',
-        economicSensitivity: 'medium',
-        regulatoryRisk: 'low',
-        currencyRisk: 'low',
-        paymentHistory: { onTime: 100, late: 0, default: 0 },
-        industryRisks: []
-      },
-      marketContext: {
-        primaryMarket: '',
-        operatingRegions: [],
-        marketSize: 'micro',
-        competitionLevel: 'medium',
-        marketGrowth: 'stable'
-      },
-      complianceProfile: {
-        kycLevel: 'basic',
-        amlRisk: 'low',
-        regulatoryRequirements: [],
-        jurisdiction: ''
-      }
     }
-  });
+  }, [isConnected, address])
 
-  const onSubmit = async (data: MerchantOnboardingFormData) => {
-    setIsSubmitting(true);
+  // Auto-generate hashes when business name or country changes
+  useEffect(() => {
+    if (formData.businessName && formData.countryCode) {
+      const creditAssessmentId = generateCreditAssessmentId(formData.businessName, formData.countryCode)
+      const { businessId, countryCodeHash } = hashBusinessData(formData.businessName, formData.countryCode)
+      
+      setFormData(prev => ({
+        ...prev,
+        businessId,
+        countryCodeHash,
+        creditAssesmentId: creditAssessmentId
+      }))
+    }
+  }, [formData.businessName, formData.countryCode])
+
+  const handleInputChange = (field: keyof MerchantOnboardingData, value: string | number) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!isConnected) {
+      alert('Please connect your wallet first')
+      return
+    }
+
     try {
-      // Process form data and prepare for Self Protocol verification
-      console.log('Submitting merchant data:', data);
-      // TODO: Implement actual submission logic
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API call
+      await startVerification(formData)
+      setShowQR(true)
     } catch (error) {
-      console.error('Error processing merchant data:', error);
-    } finally {
-      setIsSubmitting(false);
+      console.error('Verification failed:', error)
+      alert('Verification failed. Please try again.')
     }
-  };
+  }
 
-  const nextStep = () => {
-    if (currentStep < STEPS.length) {
-      setCurrentStep(currentStep + 1);
-    }
-  };
+  const renderScoreInput = (label: string, field: keyof MerchantOnboardingData, value: number) => (
+    <div className="mb-4">
+      <label className="block text-sm font-medium text-gray-700 mb-2">
+        {label} ({value}/100)
+      </label>
+      <input
+        type="range"
+        min="0"
+        max="100"
+        value={value}
+        onChange={(e) => handleInputChange(field, parseInt(e.target.value))}
+        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+      />
+    </div>
+  )
 
-  const prevStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
+  const renderSelectInput = (label: string, field: keyof MerchantOnboardingData, value: number, options: { value: number; label: string }[]) => (
+    <div className="mb-4">
+      <label className="block text-sm font-medium text-gray-700 mb-2">
+        {label}
+      </label>
+      <select
+        value={value}
+        onChange={(e) => handleInputChange(field, parseInt(e.target.value))}
+        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        {options.map(option => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </div>
+  )
+
+  if (showQR && verificationData) {
+    return (
+      <>
+        <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-lg">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Identity Verification</h2>
+          <div className="text-center">
+            <p className="text-gray-600 mb-4">
+              Your verification data has been prepared. Click the button below to generate a QR code for the Self App.
+            </p>
+            <button
+              onClick={() => setShowQR(false)}
+              className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+            >
+              Back to Form
+            </button>
+          </div>
+        </div>
+        <QRCodeDisplay data={verificationData} onClose={() => setShowQR(false)} />
+      </>
+    )
+  }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      {/* Progress indicator */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          {STEPS.map((step, index) => (
-            <div key={step.id} className="flex items-center">
-              <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${
-                currentStep >= step.id
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-200 text-gray-600'
-              }`}>
-                {step.id}
-              </div>
-              <div className="ml-2 hidden sm:block">
-                <div className={`text-sm font-medium ${
-                  currentStep >= step.id ? 'text-blue-600' : 'text-gray-500'
-                }`}>
-                  {step.name}
-                </div>
-                <div className="text-xs text-gray-500">{step.description}</div>
-              </div>
-              {index < STEPS.length - 1 && (
-                <div className={`hidden sm:block w-16 h-0.5 ml-4 ${
-                  currentStep > step.id ? 'bg-blue-600' : 'bg-gray-200'
-                }`} />
-              )}
-            </div>
-          ))}
-        </div>
+    <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Merchant Onboarding</h1>
+        <p className="text-gray-600">Complete your identity verification to access micro-finance services</p>
       </div>
 
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        {/* Step 1: Business Information */}
-        {currentStep === 1 && (
-          <BusinessInformationStep form={form} onNext={nextStep} />
+      <div className="mb-6">
+        {isMounted ? (
+          <ConnectButton />
+        ) : (
+          <div className="flex justify-center">
+            <div className="px-4 py-2 bg-gray-200 text-gray-500 rounded-lg">
+              Loading wallet connection...
+            </div>
+          </div>
         )}
-        
-        {/* Step 2: Financial Information */}
-        {currentStep === 2 && (
-          <FinancialInformationStep 
-            form={form} 
-            onNext={nextStep} 
-            onPrev={prevStep} 
-          />
-        )}
-        
-        {/* Step 3: Self Protocol Verification */}
-        {currentStep === 3 && (
-          <SelfVerificationStep 
-            form={form}
-            onNext={nextStep}
-            onPrev={prevStep}
-          />
-        )}
-        
-        {/* Step 4: Review and Submit */}
-        {currentStep === 4 && (
-          <ReviewAndSubmitStep 
-            form={form}
-            onPrev={prevStep}
-            isSubmitting={isSubmitting}
-          />
-        )}
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Basic Information */}
+        <div className="bg-gray-50 p-6 rounded-lg">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Basic Information</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Business Name
+              </label>
+              <input
+                type="text"
+                value={formData.businessName}
+                onChange={(e) => handleInputChange('businessName', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter your business name"
+                required
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Country
+              </label>
+              <select
+                value={formData.countryCode}
+                onChange={(e) => handleInputChange('countryCode', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              >
+                <option value="">Select a country</option>
+                {COUNTRY_CODES.map((country) => (
+                  <option key={country.code} value={country.code}>
+                    {country.name} ({country.code})
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Merchant Wallet (Auto-filled)
+              </label>
+              <input
+                type="text"
+                value={isMounted ? formData.merchantWallet : 'Connect wallet to auto-fill'}
+                readOnly
+                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Credit Assessment ID (Auto-generated)
+              </label>
+              <input
+                type="text"
+                value={isMounted ? (formData.creditAssesmentId || 'Will be generated from business name + country') : 'Loading...'}
+                readOnly
+                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Protection Seller Address
+              </label>
+              <input
+                type="text"
+                value={formData.protectionSeller}
+                onChange={(e) => handleInputChange('protectionSeller', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter protection seller wallet address"
+                required
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Collateral Information */}
+        <div className="bg-gray-50 p-6 rounded-lg">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Collateral Information</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Collateral Address
+              </label>
+              <input
+                type="text"
+                value={formData.collateralAddress}
+                onChange={(e) => handleInputChange('collateralAddress', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Collateral Type
+              </label>
+              <select
+                value={formData.collateralType}
+                onChange={(e) => handleInputChange('collateralType', parseInt(e.target.value))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value={CollateralType.CURRENCY}>Currency</option>
+                <option value={CollateralType.NFT}>NFT</option>
+                <option value={CollateralType.CRYPTO}>Crypto</option>
+                <option value={CollateralType.REAL_ESTATE}>Real Estate</option>
+                <option value={CollateralType.OTHER}>Other</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Core Risk Metrics */}
+        <div className="bg-gray-50 p-6 rounded-lg">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Core Risk Metrics (0-100 scale)</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {renderScoreInput('Credit Score', 'creditScore', formData.creditScore)}
+            {renderScoreInput('Default Probability', 'defaultProbability', formData.defaultProbability)}
+            {renderScoreInput('Loss Given Default', 'lossGivenDefault', formData.lossGivenDefault)}
+            {renderScoreInput('Recovery Rate', 'recoveryRate', formData.recoveryRate)}
+          </div>
+        </div>
+
+        {/* Business Fundamentals */}
+        <div className="bg-gray-50 p-6 rounded-lg">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Business Fundamentals (0-100 scale)</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {renderScoreInput('Business Age Score', 'businessAgeScore', formData.businessAgeScore)}
+            {renderScoreInput('Revenue Stability Score', 'revenueStabilityScore', formData.revenueStabilityScore)}
+            {renderScoreInput('Market Position Score', 'marketPositionScore', formData.marketPositionScore)}
+            {renderScoreInput('Industry Risk Score', 'industryRiskScore', formData.industryRiskScore)}
+            {renderScoreInput('Regulatory Compliance Score', 'regulatoryComplianceScore', formData.regulatoryComplianceScore)}
+          </div>
+        </div>
+
+        {/* Financial Health */}
+        <div className="bg-gray-50 p-6 rounded-lg">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Financial Health (0-100 scale)</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {renderScoreInput('Liquidity Score', 'liquidityScore', formData.liquidityScore)}
+            {renderScoreInput('Leverage Score', 'leverageScore', formData.leverageScore)}
+            {renderScoreInput('Cash Flow Score', 'cashFlowScore', formData.cashFlowScore)}
+            {renderScoreInput('Profitability Score', 'profitabilityScore', formData.profitabilityScore)}
+          </div>
+        </div>
+
+        {/* Risk Factors */}
+        <div className="bg-gray-50 p-6 rounded-lg">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Risk Factors</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {renderScoreInput('Market Volatility', 'marketVolatility', formData.marketVolatility)}
+            {renderSelectInput('Economic Cycle Position', 'economicCyclePosition', formData.economicCyclePosition, [
+              { value: 1, label: 'Recession' },
+              { value: 2, label: 'Recovery' },
+              { value: 3, label: 'Expansion' },
+              { value: 4, label: 'Peak' },
+              { value: 5, label: 'Contraction' }
+            ])}
+            {renderSelectInput('Regulatory Stability', 'regulatoryStability', formData.regulatoryStability, [
+              { value: 1, label: 'Very Unstable' },
+              { value: 2, label: 'Unstable' },
+              { value: 3, label: 'Moderate' },
+              { value: 4, label: 'Stable' },
+              { value: 5, label: 'Very Stable' }
+            ])}
+            {renderSelectInput('Seasonality', 'seasonality', formData.seasonality, [
+              { value: 1, label: 'No Seasonal Impact' },
+              { value: 2, label: 'Low Seasonal Impact' },
+              { value: 3, label: 'Moderate Seasonal Impact' },
+              { value: 4, label: 'High Seasonal Impact' },
+              { value: 5, label: 'Very High Seasonal Impact' }
+            ])}
+          </div>
+        </div>
+
+        <div className="flex justify-end">
+          <button
+            type="submit"
+            disabled={!isMounted || !isConnected || isVerifying}
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+          >
+            {!isMounted ? 'Loading...' : isVerifying ? 'Generating QR Code...' : 'Generate QR Code for Self App'}
+          </button>
+        </div>
       </form>
     </div>
-  );
+  )
 }

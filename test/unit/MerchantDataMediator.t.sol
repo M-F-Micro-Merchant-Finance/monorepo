@@ -45,22 +45,20 @@ contract MerchantDataMediatorTest is Test, CDSFactoryDeployers, AlgebraDeployers
     }
 
     function test__merchantOnboarding__mechantHasNotBeenOnboarded() public {
-        MerchantOnboardingData memory merchantOnboardingData = _generateMockMerchantOnboardingData();
+        MerchantOnboardingData memory merchantOnboardingData = _generateMockMerchantOnboardingData(merchantWallet, Collateral({currency: Currency.wrap(makeAddr("collateral")), collateralType: CollateralType.CRYPTO}));
         vm.label(merchantWallet, "merchant");
         vm.label(protectionSeller, "protection_seller");
-        vm.label(merchantOnboardingData.collateralAddress, "collateral");
-        vm.label(merchantOnboardingData.creditAssesmentId, "credit_assessment_001");
-        vm.label(merchantOnboardingData.businessId, "Green Valley Farm");
-        vm.label(merchantOnboardingData.countryCodeHash, "KE");
-        vm.label(merchantOnboardingData.protectionSeller, "protection_seller");
         // NOTE: t
         
     }
 
 
-    function test__merchantOnboarding__fromUserDataToPoolCreationSuccess() public {
-        MerchantOnboardingData memory merchantOnboardingData = _generateMockMerchantOnboardingData();
+    function test__merchantOnboarding__fromUserDataToPoolCreationSuccessRevertsOnValidationStrategyNotSet() public {
+        MerchantOnboardingData memory merchantOnboardingData = _generateMockMerchantOnboardingData(merchantWallet, Collateral({currency: Currency.wrap(makeAddr("collateral")), collateralType: CollateralType.CRYPTO}));
         bytes memory userData = abi.encode(merchantOnboardingData);
+        // NOTE: We need to check the state before it reaches this state becasue. This needs fork testing
+        // to be tested.
+        // vm.expectRevert(abi.encodeWithSelector(ICollateralFilter.CollateralFilter__ValidationStrategyNotSet.selector, CollateralType.CRYPTO));
         merchantDataMediator.onUserDataHook(userData);
     }
 

@@ -1,84 +1,44 @@
-import '@testing-library/jest-dom';
-import { TextEncoder, TextDecoder } from 'util';
+import '@testing-library/jest-dom'
+import { vi } from 'vitest'
 
-// Mock TextEncoder and TextDecoder for Node.js environment
-global.TextEncoder = TextEncoder as any;
-global.TextDecoder = TextDecoder as any;
+// Set test environment
+Object.defineProperty(process.env, 'NODE_ENV', {
+  value: 'test',
+  writable: true
+})
 
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: jest.fn().mockImplementation(query => ({
+  value: vi.fn().mockImplementation(query => ({
     matches: false,
     media: query,
     onchange: null,
-    addListener: jest.fn(), // deprecated
-    removeListener: jest.fn(), // deprecated
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-    dispatchEvent: jest.fn(),
+    addListener: vi.fn(), // deprecated
+    removeListener: vi.fn(), // deprecated
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
   })),
-});
-
-// Mock window.open
-Object.defineProperty(window, 'open', {
-  writable: true,
-  value: jest.fn(),
-});
-
-// Mock window.location
-Object.defineProperty(window, 'location', {
-  value: {
-    href: 'http://localhost:3000',
-    origin: 'http://localhost:3000',
-    pathname: '/',
-    search: '',
-    hash: '',
-    assign: jest.fn(),
-    replace: jest.fn(),
-    reload: jest.fn(),
-  },
-  writable: true,
-});
+})
 
 // Mock ResizeObserver
-global.ResizeObserver = jest.fn().mockImplementation(() => ({
-  observe: jest.fn(),
-  unobserve: jest.fn(),
-  disconnect: jest.fn(),
-}));
+global.ResizeObserver = vi.fn().mockImplementation(() => ({
+  observe: vi.fn(),
+  unobserve: vi.fn(),
+  disconnect: vi.fn(),
+}))
 
 // Mock IntersectionObserver
-global.IntersectionObserver = jest.fn().mockImplementation(() => ({
-  observe: jest.fn(),
-  unobserve: jest.fn(),
-  disconnect: jest.fn(),
-}));
+global.IntersectionObserver = vi.fn().mockImplementation(() => ({
+  observe: vi.fn(),
+  unobserve: vi.fn(),
+  disconnect: vi.fn(),
+}))
 
-// Mock crypto for Node.js environment
-Object.defineProperty(global, 'crypto', {
-  value: {
-    getRandomValues: (arr: any) => arr.map(() => Math.floor(Math.random() * 256)),
-    subtle: {
-      digest: jest.fn(),
-    },
-  },
-});
-
-// Mock fetch
-global.fetch = jest.fn();
-
-// Mock console methods to reduce noise in tests
-const originalConsoleError = console.error;
-const originalConsoleWarn = console.warn;
-
-beforeEach(() => {
-  console.error = jest.fn();
-  console.warn = jest.fn();
-});
-
-afterEach(() => {
-  console.error = originalConsoleError;
-  console.warn = originalConsoleWarn;
-  jest.clearAllMocks();
-});
+// Mock QRCode library
+vi.mock('qrcode', () => ({
+  default: {
+    toDataURL: vi.fn().mockResolvedValue('data:image/png;base64,test')
+  }
+}))

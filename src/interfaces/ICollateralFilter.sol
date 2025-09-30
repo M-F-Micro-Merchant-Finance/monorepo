@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 
 import {Collateral, CollateralType} from "../types/Shared.sol";
+import {IValidationStrategy} from "./IValidationStrategy.sol";
 
 interface ICollateralFilter  {
     enum WhitelistStatus {
@@ -22,6 +23,7 @@ interface ICollateralFilter  {
     function getWhitelistStatus(Collateral memory collateral) external view returns (WhitelistStatus);
     function getValidationStrategy(CollateralType collateralType) external view returns (address);
     function addToWhitelist(Collateral memory collateral) external;
+    function setValidationStrategy(CollateralType collateralType, IValidationStrategy strategy) external;
     function removeFromWhitelist(Collateral memory collateral) external;
     function getSupportedCollateralTypes() external view returns (CollateralType[] memory);
 }

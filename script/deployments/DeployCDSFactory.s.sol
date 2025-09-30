@@ -15,6 +15,9 @@ contract DeployCDSFactory is Script {
         IAlgebraFactory _algebraFactory,
         IMentoStableCoinSelector _mentoStableCoinSelector
     ) public returns (ICDSFactory) {
+        // NOTE: Since the celo_sepolia is not a known chain on foundry.
+        // We need to runn the script using ffi tutlils to riun forge create
+        // with the 
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
         CDSFactory cdsFactory = new CDSFactory(_algebraFactory, _mentoStableCoinSelector);

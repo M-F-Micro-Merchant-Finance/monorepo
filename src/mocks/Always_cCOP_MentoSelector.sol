@@ -19,3 +19,14 @@ contract Always_cCOP_MentoSelector is IMentoStableCoinSelector {
         return IERC20(address(0x8A567e2aE79CA692Bd748aB832081C45de4041eA));
     }
 }
+
+contract Always_cCOP_MentoSelector_Alfajores is IMentoStableCoinSelector {
+    function selectOptimalStableCoin(
+        uint256 tokenId,
+        bytes32 businessId,
+        bytes32 countryCodeHash,
+        Metrics memory metrics
+    ) external returns (IERC20) {
+        return IERC20(address(0xe6A57340f0df6E020c1c0a80bC6E13048601f0d4));
+    }
+}

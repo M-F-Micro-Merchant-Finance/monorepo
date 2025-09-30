@@ -3,16 +3,8 @@
   "version": "1.0.0",
   "description": "Celo Proof of Stake hooks for Uniswap V4 integration",
   "main": "index.js",
-  "directories": {
-    "lib": "lib",
-    "test": "test"
-  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "hardhat": "hardhat",
-    "compile": "hardhat compile",
-    "test:hardhat": "hardhat test",
-    "deploy": "hardhat run script/deploy.ts"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
@@ -30,21 +22,5 @@
   "bugs": {
     "url": "https://github.com/M-F-Micro-Merchant-Finance/monorepo/issues"
   },
-  "homepage": "https://github.com/M-F-Micro-Merchant-Finance/monorepo#readme",
-  "devDependencies": {
-    "@nomicfoundation/hardhat-foundry": "^1.2.0",
-    "@nomicfoundation/hardhat-toolbox": "^6.1.0",
-    "@types/node": "^20.0.0",
-    "hardhat": "^2.26.0",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.9.2"
-  },
-  "dependencies": {
-    "@cryptoalgebra/integral-base-plugin": "^1.2.4",
-    "@cryptoalgebra/integral-core": "^1.2.9",
-    "@cryptoalgebra/integral-periphery": "^1.2.4",
-    "@selfxyz/contracts": "^1.2.1",
-    "ethers": "^6.15.0",
-    "viem": "^2.34.0"
-  }
+  "homepage": "https://github.com/M-F-Micro-Merchant-Finance/monorepo#readme"
 }

@@ -19,7 +19,8 @@ interface ICDSFactory is IAlgebraCustomPoolEntryPoint {
     function createCDS(address protectionSeller, address merchantWallet, bytes32 businessId, bytes32 countryCodeHash, bytes32 creditAssesmentId, Metrics memory metrics) external returns(ICDS);
     
     function predictCDSAddress(bytes32 creditAssesmentId, address creator) external view returns(address);
-    
+    // NOTE: This function needs to be heavily protected on information retreival and on who can
+    // interact with ICDS as the token is credit default swap
     function getCDS(bytes32 creditAssesmentId) external view returns(ICDS);
     
     function isCDSDeployed(bytes32 creditAssesmentId) external view returns(bool);

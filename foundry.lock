@@ -1,6 +1,6 @@
 {
-  "lib/mento-std": {
-    "rev": "7e609362ea7bf3f6b9a3d972660c69e4339cc798"
+  "lib/hackathon-demo": {
+    "rev": "eee9e0b576169d23c056966fabb60a76856ed8ee"
   },
   "lib/Algebra": {
     "branch": {
@@ -8,61 +8,46 @@
       "rev": "4abbd17b6f225795361e17edeb1338e167005a46"
     }
   },
-  "lib/foundry-devops": {
-    "tag": {
-      "name": "0.4.0",
-      "rev": "efff097a87e70c3d15661c9f2a2daeae0b33d5d5"
-    }
-  },
   "lib/mento-deployment": {
     "rev": "0b58eae745348044a5d736daf8f45c1e7fad02de"
-  },
-  "lib/plugins-monorepo": {
-    "rev": "6a5bcc44abfb90c3edb05bbea7efec233b5bd257"
-  },
-  "lib/synthetix-v3": {
-    "tag": {
-      "name": "v3.13.0",
-      "rev": "936381f89fbb1d59f4bb9641c1430e5f49d2426b"
-    }
-  },
-  "lib/forge-std": {
-    "tag": {
-      "name": "v1.10.0",
-      "rev": "8bbcf6e3f8f62f419e5429a0bd89331c85c37824"
-    }
-  },
-  "lib/governance-tests": {
-    "rev": "3d786dce23f1928125d66e413ab31892fa2890cd"
-  },
-  "lib/hackathon-demo": {
-    "rev": "eee9e0b576169d23c056966fabb60a76856ed8ee"
-  },
-  "lib/Roci-Smart-Contracts-v2": {
-    "rev": "04fc30f992189e37b2c4f6ab0318b37bfc740c80"
   },
   "lib/oracle-v2-playground": {
     "rev": "7f8309a6d519ae07c0b26f681fdf450387440e42"
   },
+  "lib/foundry-devops": {
+    "rev": "efff097a87e70c3d15661c9f2a2daeae0b33d5d5"
+  },
   "lib/mento-router": {
     "rev": "80d12779d15c182249bbd4e9a245a9b08c6ba843"
+  },
+  "lib/forge-std": {
+    "rev": "8bbcf6e3f8f62f419e5429a0bd89331c85c37824"
+  },
+  "lib/governance-tests": {
+    "rev": "3d786dce23f1928125d66e413ab31892fa2890cd"
+  },
+  "lib/Roci-Smart-Contracts-v2": {
+    "rev": "04fc30f992189e37b2c4f6ab0318b37bfc740c80"
+  },
+  "lib/openzeppelin-contracts": {
+    "rev": "fd81a96f01cc42ef1c9a5399364968d0e07e9e90"
+  },
+  "lib/synthetix-v3": {
+    "rev": "936381f89fbb1d59f4bb9641c1430e5f49d2426b"
+  },
+  "lib/plugins-monorepo": {
+    "rev": "6a5bcc44abfb90c3edb05bbea7efec233b5bd257"
+  },
+  "lib/mento-core": {
+    "rev": "4ce201f85b3230b1db0afa45296f3b3d6ce9e2d2"
   },
   "lib/openzeppelin-contracts-v5": {
     "rev": "c64a1edb67b6e3f4a15cca8909c9482ad33a02b0"
   },
-  "lib/openzeppelin-contracts": {
-    "tag": {
-      "name": "v4.9.3",
-      "rev": "fd81a96f01cc42ef1c9a5399364968d0e07e9e90"
-    }
-  },
-  "lib/mento-core": {
-    "tag": {
-      "name": "v2.6.5",
-      "rev": "4ce201f85b3230b1db0afa45296f3b3d6ce9e2d2"
-    }
-  },
   "lib/v4-periphery": {
     "rev": "60cd93803ac2b7fa65fd6cd351fd5fd4cc8c9db5"
+  },
+  "lib/mento-std": {
+    "rev": "7e609362ea7bf3f6b9a3d972660c69e4339cc798"
   }
 }

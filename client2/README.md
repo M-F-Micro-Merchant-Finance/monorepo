@@ -1,166 +1,101 @@
-# Merchant CDS Frontend
+# Merchant Onboarding - Identity Verification
 
-A Next.js frontend application for merchant onboarding with Self Protocol integration for the Credit Default Swap (CDS) system on Celo.
+A Next.js application for merchant identity verification using Self Protocol integration with Celo blockchain.
 
 ## Features
 
-- **Privacy-Preserving Identity Verification**: Integration with Self Protocol for zero-knowledge identity verification
-- **Comprehensive Merchant Onboarding**: Multi-step form for collecting business and financial information
-- **Mobile-First Design**: Optimized for mobile devices and Celo's mobile ecosystem
-- **Smart Contract Integration**: Direct integration with Celo smart contracts
-- **Country Support**: Integration with Self Protocol supported countries
-- **Real-time Validation**: Client-side and server-side data validation
+- **Wallet Integration**: Connect with MetaMask and other wallets via RainbowKit
+- **Self Protocol Integration**: Privacy-preserving identity verification
+- **Auto-fill Functionality**: Automatically fills merchant wallet address from connected wallet
+- **Comprehensive Form**: Complete MerchantOnboardingData form with all required fields
+- **QR Code Generation**: Generates QR code data for Self App integration
+- **Mobile-First Design**: Optimized for mobile devices
 
-## Tech Stack
-
-- **Framework**: Next.js 14 with React 18
-- **Styling**: Tailwind CSS with Headless UI components
-- **Forms**: React Hook Form with Zod validation
-- **State Management**: Zustand
-- **Data Fetching**: TanStack Query
-- **Self Protocol**: @selfxyz/qrcode and @selfxyz/core
-- **Celo Integration**: @celo/contractkit
-- **TypeScript**: Full TypeScript support
-
-## Getting Started
-
-### Prerequisites
+## Prerequisites
 
 - Node.js 18+ 
-- npm, yarn, or bun
-- Celo wallet (Valora, Opera MiniPay, etc.)
+- npm or yarn
+- MetaMask or compatible wallet
+- WalletConnect Project ID (optional, for production)
 
-### Installation
+## Setup
 
-1. Clone the repository and navigate to the client directory:
-```bash
-cd client2
-```
+1. **Install dependencies**:
+   ```bash
+   npm run setup
+   ```
 
-2. Install dependencies:
-```bash
-npm install
-# or
-yarn install
-# or
-bun install
-```
+2. **Configure environment** (optional):
+   Create a `.env.local` file with:
+   ```env
+   NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID=your-project-id-here
+   NEXT_PUBLIC_SELF_PROTOCOL_SCOPE=merchant-onboarding
+   NEXT_PUBLIC_SELF_PROTOCOL_ENDPOINT=https://api.self.xyz
+   NEXT_PUBLIC_CELO_RPC_URL=https://forno.celo.org
+   NEXT_PUBLIC_CELO_ALFAJORES_RPC_URL=https://alfajores-forno.celo-testnet.org
+   ```
 
-3. Copy the environment configuration:
-```bash
-cp env.example .env.local
-```
+3. **Run the application**:
+   ```bash
+   npm run run:localhost
+   ```
 
-4. Update the environment variables in `.env.local`:
-   - Set your Self Protocol configuration
-   - Update contract addresses with deployed addresses
-   - Configure Celo RPC endpoints
+4. **Open your browser**:
+   Navigate to `http://localhost:3000`
 
-5. Start the development server:
-```bash
-npm run dev
-# or
-yarn dev
-# or
-bun dev
-```
+## Usage
 
-6. Open [http://localhost:3000](http://localhost:3000) in your browser.
+1. **Connect Wallet**: Click the "Connect Wallet" button to connect your MetaMask or other wallet
+2. **Fill Form**: Complete the merchant onboarding form with your business information
+3. **Auto-fill**: The merchant wallet address will be automatically filled from your connected wallet
+4. **Submit**: Click "Start Identity Verification" to generate QR code data
+5. **Self App**: Use the generated QR code data with the Self App for identity verification
 
-## Project Structure
+## Form Sections
 
-```
-src/
-├── components/           # React components
-│   ├── steps/           # Multi-step form components
-│   ├── CountrySelection.tsx
-│   └── MerchantOnboardingForm.tsx
-├── pages/               # Next.js pages
-│   └── api/            # API routes
-├── types/               # TypeScript type definitions
-│   └── contracts.ts    # Contract-related types
-├── utils/               # Utility functions
-├── hooks/               # Custom React hooks
-└── styles/              # Global styles
-```
+### Basic Information
+- Business Name (will be hashed to businessId)
+- Country Selection (will be hashed to countryCodeHash)
+- Credit Assessment ID (auto-generated from business name + country)
+- Merchant Wallet (auto-filled)
 
-## Key Components
+### Collateral Information
+- Collateral Address
+- Collateral Type (Currency, NFT, Crypto, Real Estate, Other)
 
-### MerchantOnboardingForm
-The main form component that orchestrates the multi-step onboarding process:
-1. Business Information
-2. Financial Information  
-3. Identity Verification (Self Protocol)
-4. Review & Submit
+### Core Risk Metrics (0-100 scale)
+- Credit Score
+- Default Probability
+- Loss Given Default
+- Recovery Rate
 
-### SelfVerificationStep
-Handles Self Protocol integration:
-- QR code generation for desktop users
-- Deep linking for mobile users
-- Privacy-preserving identity verification
-- Sybil resistance through passport verification
+### Business Fundamentals (0-100 scale)
+- Business Age Score
+- Revenue Stability Score
+- Market Position Score
+- Industry Risk Score
+- Regulatory Compliance Score
 
-### CountrySelection
-Provides country selection with Self Protocol supported countries:
-- Searchable dropdown
-- Mobile-optimized interface
-- Integration with Self Protocol requirements
+### Financial Health (0-100 scale)
+- Liquidity Score
+- Leverage Score
+- Cash Flow Score
+- Profitability Score
 
-## Self Protocol Integration
+### Risk Factors
+- Market Volatility (0-100)
+- Economic Cycle Position (1-5)
+- Regulatory Stability (1-5)
+- Seasonality (1-5)
 
-The application integrates with Self Protocol for privacy-preserving identity verification:
+## Technical Stack
 
-### Frontend Configuration
-```typescript
-const selfApp = new SelfAppBuilder({
-  version: 2,
-  appName: "Merchant CDS Onboarding",
-  scope: "merchant-cds-verification",
-  endpoint: "https://api.self.xyz/api/verify",
-  userId: userId,
-  disclosures: {
-    minimumAge: 18,
-    nationality: true,
-    excludedCountries: ["IRN", "PRK", "RUS", "SYR"],
-    ofac: true
-  }
-}).build();
-```
-
-### Backend Verification
-The `/api/verify` route handles proof verification using the Self Protocol backend SDK.
-
-## Data Flow
-
-1. **Merchant Data Collection**: User fills out comprehensive business and financial information
-2. **Self Protocol Verification**: Identity verification using zero-knowledge proofs
-3. **Data Processing**: Form data is processed and validated
-4. **Smart Contract Integration**: Data is submitted to Celo smart contracts
-5. **CDS Token Creation**: CDS tokens are created based on merchant data and risk assessment
-
-## Mobile Optimization
-
-The application is optimized for mobile devices:
-- Mobile-first responsive design
-- Touch-friendly interfaces
-- Deep linking for Self Protocol integration
-- Optimized for Celo's mobile ecosystem
-
-## Country Support
-
-The application supports countries that are compatible with Self Protocol:
-- United States, Canada, United Kingdom
-- European Union countries
-- Asia-Pacific countries
-- African countries
-- Latin American countries
-
-## Security Considerations
-
-- **Data Privacy**: No sensitive data stored on frontend
-- **Self Protocol**: Handles identity verification with zero-knowledge proofs
-- **Input Validation**: Comprehensive client and server-side validation
-- **Error Handling**: Graceful error handling and user feedback
+- **Framework**: Next.js 15 with App Router
+- **Styling**: Tailwind CSS
+- **Wallet Integration**: RainbowKit + Wagmi
+- **Blockchain**: Celo (Mainnet + Alfajores Testnet)
+- **Identity Verification**: Self Protocol
+- **TypeScript**: Full type safety
 
 ## Development
 
@@ -170,32 +105,44 @@ The application supports countries that are compatible with Self Protocol:
 - `npm run build` - Build for production
 - `npm run start` - Start production server
 - `npm run lint` - Run ESLint
-- `npm run type-check` - Run TypeScript type checking
+- `npm run run:localhost` - Alias for dev server
+- `npm run setup` - Install dependencies and show setup instructions
+- `npm run test` - Run tests (placeholder)
 
-### Code Quality
+### Project Structure
 
-- TypeScript for type safety
-- ESLint for code quality
-- Prettier for code formatting
-- React Hook Form for form management
-- Zod for schema validation
-
-## Deployment
-
-### Environment Variables
-
-Ensure all required environment variables are set:
-- Self Protocol configuration
-- Celo network endpoints
-- Contract addresses
-- API endpoints
-
-### Build Process
-
-```bash
-npm run build
-npm run start
 ```
+src/
+├── app/
+│   ├── layout.tsx          # Root layout with providers
+│   └── page.tsx            # Main page
+├── components/
+│   └── MerchantOnboardingForm.tsx  # Main form component
+├── config/
+│   └── env.ts              # Environment configuration
+├── hooks/
+│   └── useSelfProtocol.ts  # Self Protocol integration hook
+└── types/
+    └── index.ts            # TypeScript type definitions
+```
+
+## Self Protocol Integration
+
+The application integrates with Self Protocol for privacy-preserving identity verification:
+
+1. **Data Formatting**: Merchant data is formatted according to Self Protocol requirements
+2. **QR Code Generation**: Generates QR code data for Self App scanning
+3. **Privacy Preservation**: No personal data is exposed during verification
+4. **Zero-Knowledge Proofs**: Uses ZK proofs for identity verification
+5. **Data Hashing**: Business name and country code are hashed using keccak256 before submission
+6. **Credit Assessment ID**: Auto-generated by hashing the combined business name and country code
+
+## Celo Integration
+
+- **Network Support**: Celo Mainnet and Alfajores Testnet
+- **Mobile-First**: Optimized for Celo's mobile ecosystem
+- **Low Gas Costs**: Leverages Celo's low transaction fees
+- **Stablecoin Support**: Ready for Celo's stablecoin ecosystem
 
 ## Contributing
 
@@ -208,16 +155,3 @@ npm run start
 ## License
 
 MIT License - see LICENSE file for details
-
-## Support
-
-For support and questions:
-- Check the documentation
-- Open an issue on GitHub
-- Join the community Discord
-
-## Related Projects
-
-- [Self Protocol](https://self.xyz) - Privacy-preserving identity verification
-- [Celo](https://celo.org) - Mobile-first blockchain platform
-- [Merchant CDS Smart Contracts](../src/) - Solidity contracts for CDS system

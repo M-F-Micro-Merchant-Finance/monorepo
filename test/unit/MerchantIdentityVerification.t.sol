@@ -45,14 +45,15 @@ contract MerchantIdentityVerificationTest is Test, MerchantIdentityVerificationM
 
         CDSFactory _cdsFactory = new CDSFactory(algebraFactory, mentoStableCoinSelector);
         cdsFactory = ICDSFactory(address(_cdsFactory));
-        MerchantDataMediator _merchantDataMediator = new MerchantDataMediator(cdsFactory);
-        merchantDataMediator = IMerchantDataMediator(address(_merchantDataMediator));
-        hub = deployAnySelfIdentityVerificationHub();
+        
+        // MerchantDataMediator _merchantDataMediator = new MerchantDataMediator(cdsFactory);
+        // merchantDataMediator = IMerchantDataMediator(address(_merchantDataMediator));
+        // hub = deployAnySelfIdentityVerificationHub();
  
-        MerchantIdentityVerification _merchantIdentityVerification = new MerchantIdentityVerification(
-            address(hub), merchantDataMediator, _generateMockScopeValue(), _generateMockUnformattedVerificationConfigV2()
-        );
-        merchantIdentityVerification = IMerchantIdentityVerification(address(_merchantIdentityVerification));
+        // MerchantIdentityVerification _merchantIdentityVerification = new MerchantIdentityVerification(
+        //     address(hub), merchantDataMediator, _generateMockScopeValue(), _generateMockUnformattedVerificationConfigV2()
+        // );
+        // merchantIdentityVerification = IMerchantIdentityVerification(address(_merchantIdentityVerification));
 
         // algebraFactory.grantRole(algebraFactory.CUSTOM_POOL_DEPLOYER(), address(cdsFactory));
         // algebraFactory.grantRole(algebraFactory.POOLS_ADMINISTRATOR_ROLE(), address(cdsFactory));

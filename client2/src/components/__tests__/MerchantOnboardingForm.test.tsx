@@ -1,154 +1,117 @@
-import React from 'react';
-import { render, screen, fireEvent, waitFor } from '../../test/test-utils';
-import { MerchantOnboardingForm } from '../MerchantOnboardingForm';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { describe, it, expect, vi } from 'vitest'
+import MerchantOnboardingForm from '../MerchantOnboardingForm'
 
-// Mock the step components
-jest.mock('../steps/BusinessInformationStep', () => ({
-  BusinessInformationStep: ({ onNext }: { onNext: () => void }) => (
-    <div data-testid="business-info-step">
-      <button onClick={onNext}>Next</button>
-    </div>
-  ),
-}));
+// Mock wagmi hooks
+vi.mock('wagmi', () => ({
+  useAccount: () => ({
+    address: '0x1234567890123456789012345678901234567890',
+    isConnected: true
+  }),
+  useConnect: () => ({
+    connect: vi.fn()
+  })
+}))
 
-jest.mock('../steps/FinancialInformationStep', () => ({
-  FinancialInformationStep: ({ onNext, onPrev }: { onNext: () => void; onPrev: () => void }) => (
-    <div data-testid="financial-info-step">
-      <button onClick={onPrev}>Previous</button>
-      <button onClick={onNext}>Next</button>
-    </div>
-  ),
-}));
-
-jest.mock('../steps/SelfVerificationStep', () => ({
-  SelfVerificationStep: ({ onNext, onPrev }: { onNext: () => void; onPrev: () => void }) => (
-    <div data-testid="self-verification-step">
-      <button onClick={onPrev}>Previous</button>
-      <button onClick={onNext}>Next</button>
-    </div>
-  ),
-}));
-
-jest.mock('../steps/ReviewAndSubmitStep', () => ({
-  ReviewAndSubmitStep: ({ onPrev, isSubmitting }: { onPrev: () => void; isSubmitting: boolean }) => (
-    <div data-testid="review-submit-step">
-      <button onClick={onPrev}>Previous</button>
-      <button disabled={isSubmitting}>
-        {isSubmitting ? 'Submitting...' : 'Submit'}
-      </button>
-    </div>
-  ),
-}));
+// Mock RainbowKit
+vi.mock('@rainbow-me/rainbowkit', () => ({
+  ConnectButton: () => <button>Connect Wallet</button>
+}))
 
 describe('MerchantOnboardingForm', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
+  it('renders the form correctly', () => {
+    render(<MerchantOnboardingForm />)
+    
+    expect(screen.getByText('Merchant Onboarding')).toBeInTheDocument()
+    expect(screen.getByText('Basic Information')).toBeInTheDocument()
+    expect(screen.getByText('Collateral Information')).toBeInTheDocument()
+    expect(screen.getByText('Core Risk Metrics (0-100 scale)')).toBeInTheDocument()
+  })
 
-  it('renders the first step by default', () => {
-    render(<MerchantOnboardingForm />);
+  it('auto-fills wallet address when connected', async () => {
+    render(<MerchantOnboardingForm />)
     
-    expect(screen.getByTestId('business-info-step')).toBeInTheDocument();
-    expect(screen.getByText('Business Information')).toBeInTheDocument();
-  });
+    // Wait for component to mount
+    await new Promise(resolve => setTimeout(resolve, 100))
+    
+    const walletInput = screen.getByDisplayValue('0x1234567890123456789012345678901234567890')
+    expect(walletInput).toBeInTheDocument()
+  })
 
-  it('shows progress indicator with correct steps', () => {
-    render(<MerchantOnboardingForm />);
+  it('updates form fields correctly', async () => {
+    render(<MerchantOnboardingForm />)
     
-    expect(screen.getByText('1')).toBeInTheDocument();
-    expect(screen.getByText('2')).toBeInTheDocument();
-    expect(screen.getByText('3')).toBeInTheDocument();
-    expect(screen.getByText('4')).toBeInTheDocument();
-  });
+    // Wait for component to mount
+    await new Promise(resolve => setTimeout(resolve, 100))
+    
+    const businessNameInput = screen.getByPlaceholderText('Enter your business name')
+    fireEvent.change(businessNameInput, { target: { value: 'Test Business' } })
+    
+    expect(businessNameInput).toHaveValue('Test Business')
+  })
 
-  it('navigates to next step when next button is clicked', async () => {
-    render(<MerchantOnboardingForm />);
+  it('updates country selection correctly', async () => {
+    render(<MerchantOnboardingForm />)
     
-    const nextButton = screen.getByText('Next');
-    fireEvent.click(nextButton);
+    // Wait for component to mount
+    await new Promise(resolve => setTimeout(resolve, 100))
     
-    await waitFor(() => {
-      expect(screen.getByTestId('financial-info-step')).toBeInTheDocument();
-    });
-  });
+    const countrySelect = screen.getByDisplayValue('Select a country')
+    fireEvent.change(countrySelect, { target: { value: 'USA' } })
+    
+    expect(countrySelect).toHaveValue('USA')
+  })
 
-  it('navigates to previous step when previous button is clicked', async () => {
-    render(<MerchantOnboardingForm />);
+  it('auto-generates credit assessment ID when business name and country are provided', async () => {
+    render(<MerchantOnboardingForm />)
     
-    // Go to step 2
-    const nextButton = screen.getByText('Next');
-    fireEvent.click(nextButton);
+    // Wait for component to mount
+    await new Promise(resolve => setTimeout(resolve, 100))
     
-    await waitFor(() => {
-      expect(screen.getByTestId('financial-info-step')).toBeInTheDocument();
-    });
+    const businessNameInput = screen.getByPlaceholderText('Enter your business name')
+    const countrySelect = screen.getByDisplayValue('Select a country')
     
-    // Go back to step 1
-    const prevButton = screen.getByText('Previous');
-    fireEvent.click(prevButton);
+    fireEvent.change(businessNameInput, { target: { value: 'Test Business' } })
+    fireEvent.change(countrySelect, { target: { value: 'USA' } })
     
-    await waitFor(() => {
-      expect(screen.getByTestId('business-info-step')).toBeInTheDocument();
-    });
-  });
+    // The credit assessment ID should be auto-generated and displayed
+    const creditAssessmentField = screen.getByDisplayValue(/0x[a-fA-F0-9]{64}/)
+    expect(creditAssessmentField).toBeInTheDocument()
+  })
 
-  it('shows all steps in correct order', async () => {
-    render(<MerchantOnboardingForm />);
+  it('validates required fields', () => {
+    render(<MerchantOnboardingForm />)
     
-    // Step 1: Business Information
-    expect(screen.getByTestId('business-info-step')).toBeInTheDocument();
+    const submitButton = screen.getByText('Generate QR Code for Self App')
+    fireEvent.click(submitButton)
     
-    // Navigate to step 2
-    fireEvent.click(screen.getByText('Next'));
-    await waitFor(() => {
-      expect(screen.getByTestId('financial-info-step')).toBeInTheDocument();
-    });
-    
-    // Navigate to step 3
-    fireEvent.click(screen.getByText('Next'));
-    await waitFor(() => {
-      expect(screen.getByTestId('self-verification-step')).toBeInTheDocument();
-    });
-    
-    // Navigate to step 4
-    fireEvent.click(screen.getByText('Next'));
-    await waitFor(() => {
-      expect(screen.getByTestId('review-submit-step')).toBeInTheDocument();
-    });
-  });
+    // Form should not submit without required fields
+    expect(screen.getByText('Generate QR Code for Self App')).toBeInTheDocument()
+  })
 
-  it('handles form submission', async () => {
-    const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+  it('shows QR code when form is submitted with valid data', async () => {
+    render(<MerchantOnboardingForm />)
     
-    render(<MerchantOnboardingForm />);
+    // Wait for component to mount
+    await new Promise(resolve => setTimeout(resolve, 100))
     
-    // Navigate to final step without filling out fields
-    fireEvent.click(screen.getByText('Next')); // Step 2
+    const businessNameInput = screen.getByPlaceholderText('Enter your business name')
+    const countrySelect = screen.getByDisplayValue('Select a country')
+    const submitButton = screen.getByText('Generate QR Code for Self App')
+    
+    fireEvent.change(businessNameInput, { target: { value: 'Test Business' } })
+    fireEvent.change(countrySelect, { target: { value: 'USA' } })
+    
+    // Wait for credit assessment ID to be generated
+    await new Promise(resolve => setTimeout(resolve, 100))
+    
+    fireEvent.click(submitButton)
+    
+    // Should show QR code modal with Self app functionality
     await waitFor(() => {
-      fireEvent.click(screen.getByText('Next')); // Step 3
-    });
-    await waitFor(() => {
-      fireEvent.click(screen.getByText('Next')); // Step 4
-    });
-    
-    // Wait for review step to be visible
-    await waitFor(() => {
-      expect(screen.getByTestId('review-submit-step')).toBeInTheDocument();
-    });
-    
-    // Check if submit button is disabled
-    const submitButton = screen.getByText('Submit');
-    expect(submitButton).toBeInTheDocument();
-    
-    // Try to submit form - this might not work due to validation
-    fireEvent.click(submitButton);
-    
-    // Wait a bit to see if anything happens
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
-    // The form might not submit due to validation, so let's just check that the button exists
-    expect(submitButton).toBeInTheDocument();
-    
-    consoleSpy.mockRestore();
-  });
-});
+      expect(screen.getByText('Self App Verification')).toBeInTheDocument()
+      expect(screen.getByText('Open Self App')).toBeInTheDocument()
+      expect(screen.getByText('Copy Self App URL')).toBeInTheDocument()
+    }, { timeout: 5000 })
+  })
+})

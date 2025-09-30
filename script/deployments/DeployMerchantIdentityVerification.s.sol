@@ -1,35 +1,54 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
+pragma abicoder v2;
 
+import {
+    Script,
+    console2
+} from "forge-std/Script.sol";
 
-import {Script} from "forge-std/Script.sol";
-import {MerchantIdentityVerification} from "../../src/MerchantIdentityVerification.sol";
-import {IMerchantIdentityVerification} from "../../src/interfaces/IMerchantIdentityVerification.sol";
-import {IMerchantDataMediator} from "../../src/interfaces/IMerchantDataMediator.sol";
-import {ICDSFactory} from "../../src/interfaces/ICDSFactory.sol";
 import {SelfUtils} from "../../src/libraries/self/SelfUtils.sol";
-import {ICDSFactory} from "../../src/interfaces/ICDSFactory.sol";
+import {IMerchantDataMediator} from "../../src/interfaces/IMerchantDataMediator.sol";
+import {MerchantIdentityVerification} from "../../src/MerchantIdentityVerification.sol";
 
 contract DeployMerchantIdentityVerification is Script {
- 
-    function run(
-        address _hubAddress,
-        IMerchantDataMediator _merchantDataMediator,
-        uint256 _scopeValue,
-        SelfUtils.UnformattedVerificationConfigV2 memory _rawVerificationConfig
-    ) public returns (IMerchantIdentityVerification) {
+    function run() public {
+        // Get the merchant data mediator address from environment or use the provided one
+        address merchantDataMediatorAddress = vm.envOr("MERCHANT_DATA_MEDIATOR", address(0x71542aEe829993145Cdd8B98829081d2fc358355));
         
-        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-        vm.startBroadcast(deployerPrivateKey);
+        // Create the verification config
+        SelfUtils.UnformattedVerificationConfigV2 memory rawVerificationConfig = SelfUtils.UnformattedVerificationConfigV2({
+            olderThan: 18,
+            forbiddenCountries: new string[](0),
+            ofacEnabled: false
+        });
         
+        // Hub address for Self Protocol
+        address hubAddress = address(0x16ECBA51e18a4a7e61fdC417f0d47AFEeDfbed74);
+        
+        // Scope value
+        uint256 scopeValue = uint256(16509021853945345868436772242014050830557849314816012934116460838688206719767);
+        
+        console2.log("Deploying MerchantIdentityVerification with:");
+        console2.log("  Hub Address:", hubAddress);
+        console2.log("  Merchant Data Mediator:", merchantDataMediatorAddress);
+        console2.log("  Scope Value:", scopeValue);
+        console2.log("  Older Than:", rawVerificationConfig.olderThan);
+        console2.log("  Forbidden Countries Count:", rawVerificationConfig.forbiddenCountries.length);
+        console2.log("  OFAC Enabled:", rawVerificationConfig.ofacEnabled);
+        
+        vm.startBroadcast();
+        
+        // Deploy the contract directly
         MerchantIdentityVerification merchantIdentityVerification = new MerchantIdentityVerification(
-            _hubAddress,
-            _merchantDataMediator,
-            _scopeValue,
-            _rawVerificationConfig
+            hubAddress,
+            IMerchantDataMediator(merchantDataMediatorAddress),
+            scopeValue,
+            rawVerificationConfig
         );
-
+        
         vm.stopBroadcast();
-        return IMerchantIdentityVerification(address(merchantIdentityVerification));
+        
+        console2.log("MerchantIdentityVerification deployed at:", address(merchantIdentityVerification));
     }
 }

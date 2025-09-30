@@ -18,8 +18,7 @@ import{
 } from "../../src/types/Shared.sol";
 import {Currency} from "@uniswap/v4-core/src/types/Currency.sol";
 
-contract CollateralFilterTest is Test {
-    address mentoReserveProxy = address(0x9380fA34Fd9e4Fd14c06305fd7B6199089eD4eb9);
+contract CollateralFilterTests is Test {
 
     CollateralFilter public collateralFilter;
     IReserve public mentoReserve;
@@ -28,6 +27,7 @@ contract CollateralFilterTest is Test {
 
     address whaleDeployer = address(0xf6436829Cf96EA0f8BC49d300c536FCC4f84C4ED);
     address USDC = address(0xcebA9300f2b948710d2653dD7B07f33A8B32118C);
+    address mentoReserveProxy = address(0x9380fA34Fd9e4Fd14c06305fd7B6199089eD4eb9);
 
 
     bool forked;
@@ -36,8 +36,17 @@ contract CollateralFilterTest is Test {
 
     function setUp() public {
         try vm.envString("ALCHEMY_API_KEY") returns (string memory) {
+    
             console2.log("Forked Celo mainnet");
             vm.createSelectFork(vm.rpcUrl("celo"), 47_187_910);
+            mentoReserve = IReserve(mentoReserveProxy);
+            vm.label(address(mentoReserve), "mentoReserve");
+            vm.startPrank(whaleDeployer);
+            collateralFilter = new CollateralFilter();
+            currencyCollateralValidator = new CurrencyCollateralValidator(mentoReserve);
+            vm.stopPrank();
+            forked = true;
+
         
         } catch {
             console2.log(
@@ -45,13 +54,7 @@ contract CollateralFilterTest is Test {
             );
         }
         
-        vm.createSelectFork(vm.rpcUrl("celo"));
-        mentoReserve = IReserve(mentoReserveProxy);
-        vm.label(address(mentoReserve), "mentoReserve");
-        vm.startPrank(whaleDeployer);
-        collateralFilter = new CollateralFilter();
-        currencyCollateralValidator = new CurrencyCollateralValidator(mentoReserve);
-        vm.stopPrank();
+
     
     }
 

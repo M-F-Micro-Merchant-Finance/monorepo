@@ -14,19 +14,21 @@ struct MockData {
 }
 
 import {StdCheatsSafe} from "forge-std/StdCheats.sol";
+import {Collateral} from "../../src/types/Shared.sol";
+import {Currency} from "@uniswap/v4-core/src/types/Currency.sol";
 
 contract MerchantIdentityVerificationMockDataGenerator is StdCheatsSafe {
     
     
-    function _generateMockMerchantOnboardingData() internal returns (MerchantOnboardingData memory) {
+    function _generateMockMerchantOnboardingData(address merchantWallet, Collateral memory _collateralInfo) internal returns (MerchantOnboardingData memory) {
         return MerchantOnboardingData({
             businessId: keccak256("Green Valley Farm"),
             countryCodeHash: keccak256("KE"),
             creditAssesmentId: keccak256("credit_assessment_001"),
-            collateralAddress: makeAddr("collateral"),
-            collateralType: uint8(CollateralType.CRYPTO),
+            collateralAddress: Currency.unwrap(_collateralInfo.currency),
+            collateralType: uint8(_collateralInfo.collateralType),
             protectionSeller: makeAddr("protection_seller"),
-            merchantWallet: makeAddr("merchant"),
+            merchantWallet: merchantWallet,
             creditScore: 75,
             defaultProbability: 12,
             lossGivenDefault: 40,
@@ -47,12 +49,12 @@ contract MerchantIdentityVerificationMockDataGenerator is StdCheatsSafe {
         });
     }
 
-    function _setupMockData() internal returns (MockData memory) {
+    function _setupMockData(address merchantWallet, Collateral memory _collateralInfo) internal returns (MockData memory) {
         // Create mock merchant data
         return MockData({
-            merchantOnboardingData: _generateMockMerchantOnboardingData(),
+            merchantOnboardingData: _generateMockMerchantOnboardingData(merchantWallet, _collateralInfo),
             mockProofPayload: _generateMockProofPayload(),
-            mockUserContextData: _generateMockUserContextData()
+            mockUserContextData: _generateMockUserContextData(merchantWallet, _collateralInfo)
         });
     }
 
@@ -97,11 +99,11 @@ contract MerchantIdentityVerificationMockDataGenerator is StdCheatsSafe {
         return abi.encodePacked(attestationId, proofData);
     }
 
-    function _generateMockUserContextData() internal returns (bytes memory) {
+    function _generateMockUserContextData(address merchantWallet, Collateral memory _collateralInfo) internal returns (bytes memory) {
         // Format: | 32 bytes destChainId | 32 bytes userIdentifier | merchant data |
         bytes32 destChainId = bytes32(uint256(42220)); // Celo mainnet
         bytes32 userIdentifier = bytes32(uint256(12345));
-        MerchantOnboardingData memory mockMerchantData = _generateMockMerchantOnboardingData();
+        MerchantOnboardingData memory mockMerchantData = _generateMockMerchantOnboardingData(merchantWallet, _collateralInfo);
         // Encode merchant data
         bytes memory merchantDataBytes = abi.encode(mockMerchantData);
         

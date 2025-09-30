@@ -10,7 +10,7 @@ import {IERC5484} from "./IERC5484.sol";
 import {Metrics} from "../types/Metrics.sol";
 import {ICDSFactory} from "./ICDSFactory.sol";
 
-interface ICDS is IERC6909Metadata,IERC6909ContentURI,IERC6909TokenSupply, IERC7818, IERC5114, IERC5484 {
+interface ICDS is IERC6909, IERC6909Metadata,IERC6909ContentURI,IERC6909TokenSupply, IERC7818, IERC5114, IERC5484 {
     
     error NotCDSFactory();
 

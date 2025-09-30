@@ -7,7 +7,11 @@ libs = ["lib", "node_modules"]
 solc_version = "0.8.20"
 auto_detect_remappings = true
 bytecode_hash = "none"
+cbor_metadata = false
 gas_limit = "3000000000"
+ffi=true
+
+
 
 fs_permissions = [
     { access = "read-write", path = ".forge-snapshots/" }, 
@@ -51,7 +55,11 @@ remappings = [
 
 celo = "https://celo-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}"
 celo_sepolia="https://celo-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}"
+celo_alfajores="https://celo-alfajores.g.alchemy.com/v2/${ALCHEMY_API_KEY}"
 
+[etherscan]
+celo_sepolia = { key = "${CELO_SEPOLIA_EXPLORER_API_KEY}", url = "https://celo-sepolia.blockscout.com/api" }
+celo_alfajores = { key = "${CELO_ALFAJORES_EXPLORER_API_KEY}", url = "https://alfajores.celoscan.io/api" }
 
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options

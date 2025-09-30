@@ -17,6 +17,8 @@ contract DeployMerchantDataMediator is Script {
     ) public returns (IMerchantDataMediator) {
         
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        address _deployerAddress = vm.addr(deployerPrivateKey);
+
         vm.startBroadcast(deployerPrivateKey);
         MerchantDataMediator merchantDataMediator = new MerchantDataMediator(_cdsFactory, _collateralFilter);
         vm.stopBroadcast();

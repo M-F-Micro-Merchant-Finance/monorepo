@@ -13,6 +13,7 @@ struct MerchantOnboardingData{
     // Collateral collateral;
     address collateralAddress;
     uint8 collateralType;
+    // TODO: The amount of collateral entered ...
     
     // CDS Entity Management
     address protectionSeller; // Initial protection seller (can be changed later)
