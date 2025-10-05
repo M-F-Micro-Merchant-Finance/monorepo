@@ -79,7 +79,8 @@ contract CDSFactory is ICDSFactory, AlgebraCustomPoolEntryPoint {
             protectionSeller,
             address(cdsInstance),
             address(stableCoin),
-            abi.encode(creditAssesmentId)
+            abi.encode(creditAssesmentId, businessId, countryCodeHash),
+            metrics
         );
        
         _deployedCDS[creditAssesmentId] = cdsInstance;

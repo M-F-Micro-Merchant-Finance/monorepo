@@ -46,4 +46,9 @@ library MetricsLibrary {
             )
         );
     }
+
+    // NOTE: This function is used to calculate the initial price of the pool
+    function calculateInitialPrice(Metrics memory metrics) internal pure returns (uint256) {
+        return 0;
+    }
 }
