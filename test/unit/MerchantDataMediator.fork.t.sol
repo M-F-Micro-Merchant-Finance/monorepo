@@ -79,7 +79,7 @@ contract MerchantDataMediatorForkTest is Test, CDSFactoryDeployers, AlgebraDeplo
             collateralFilter = new CollateralFilter();
             currencyCollateralValidator = new CurrencyCollateralValidator(mentoReserve);
             collateralFilter.setValidationStrategy(CollateralType.CURRENCY, currencyCollateralValidator);
-            collateralFilter.addToWhitelist(Collateral({currency: Currency.wrap(USDC), collateralType: CollateralType.CURRENCY}));
+            collateralFilter.addToWhitelist(Collateral({currency: Currency.wrap(USDC), collateralType: CollateralType.CURRENCY, amount: 1000000000000000000}));
             Always_cCOP_MentoSelector always_cCOP_MentoSelector = new Always_cCOP_MentoSelector();
             mentoStableCoinSelector = IMentoStableCoinSelector(address(always_cCOP_MentoSelector));
             deployCDSFactory(algebraFactory, mentoStableCoinSelector);
@@ -99,7 +99,7 @@ contract MerchantDataMediatorForkTest is Test, CDSFactoryDeployers, AlgebraDeplo
 
     function test__merchantOnboardingData__fromUserDataToPoolCreationSuccess() public {
         assertTrue(forked);
-        MerchantOnboardingData memory merchantOnboardingData = _generateMockMerchantOnboardingData(whaleDeployer, Collateral({currency: Currency.wrap(USDC), collateralType: CollateralType.CURRENCY}));
+        MerchantOnboardingData memory merchantOnboardingData = _generateMockMerchantOnboardingData(whaleDeployer, Collateral({currency: Currency.wrap(USDC), collateralType: CollateralType.CURRENCY, amount: 1000000000000000000}));
         bytes memory userData = abi.encode(merchantOnboardingData);
         vm.startPrank(whaleDeployer);
         // TODO: Check for event emissions

@@ -18,15 +18,19 @@ import {
 
 import "../../src/types/Shared.sol";
 
+import {ICreditAssesmentManager} from "../../src/interfaces/ICreditAssesmentManager.sol";
+
 contract MerchantDataMediatorTest is Test, CDSFactoryDeployers, AlgebraDeployers, MerchantIdentityVerificationMockDataGenerator {
     MerchantDataMediator public merchantDataMediator;
     IMentoStableCoinSelector public mentoStableCoinSelector;
     ICollateralFilter public collateralFilter;
 
-    address public merchantWallet = makeAddr("merchant");
-    address public protectionSeller = makeAddr("protection_seller");
+    address public maria = makeAddr("maria");
+    address public mariaFundManager = makeAddr("mariaFundManager");
 
     function setUp() public{
+        vm.label(maria, "maria");
+        vm.label(mariaFundManager, "mariaFundManager");
         deployFreshAlgebraFactoryAndPoolDeployer(address(this));
         CollateralFilter _collateralFilter = new CollateralFilter();
         collateralFilter = ICollateralFilter(address(_collateralFilter));
@@ -44,22 +48,61 @@ contract MerchantDataMediatorTest is Test, CDSFactoryDeployers, AlgebraDeployers
 
     }
 
-    function test__merchantOnboarding__mechantHasNotBeenOnboarded() public {
-        MerchantOnboardingData memory merchantOnboardingData = _generateMockMerchantOnboardingData(merchantWallet, Collateral({currency: Currency.wrap(makeAddr("collateral")), collateralType: CollateralType.CRYPTO}));
-        vm.label(merchantWallet, "merchant");
-        vm.label(protectionSeller, "protection_seller");
-        // NOTE: t
+    // function test__merchantOnboarding__mechantHasNotBeenOnboarded() public {
+    //     MerchantOnboardingData memory merchantOnboardingData = _generateMockMerchantOnboardingData(maria, Collateral({currency: Currency.wrap(makeAddr("collateral")), collateralType: CollateralType.CRYPTO}));
+    //     vm.label(maria, "maria");
+    //     vm.label(mariaFundManager, "mariaFundManager");
+    //     // NOTE: t
         
-    }
+    // }
 
 
     function test__merchantOnboarding__fromUserDataToPoolCreationSuccessRevertsOnValidationStrategyNotSet() public {
-        MerchantOnboardingData memory merchantOnboardingData = _generateMockMerchantOnboardingData(merchantWallet, Collateral({currency: Currency.wrap(makeAddr("collateral")), collateralType: CollateralType.CRYPTO}));
+        MerchantOnboardingData memory merchantOnboardingData = _generateMockMerchantOnboardingData(
+            maria,
+            Collateral({currency: Currency.wrap(makeAddr("collateral")), collateralType: CollateralType.CRYPTO, amount: 1000000000000000000})
+        );
+
+
         bytes memory userData = abi.encode(merchantOnboardingData);
         // NOTE: We need to check the state before it reaches this state becasue. This needs fork testing
         // to be tested.
         // vm.expectRevert(abi.encodeWithSelector(ICollateralFilter.CollateralFilter__ValidationStrategyNotSet.selector, CollateralType.CRYPTO));
         merchantDataMediator.onUserDataHook(userData);
+    }
+
+    function test__merchantFunding__fundingSuccess() public {
+        MerchantOnboardingData memory merchantOnboardingData = _generateMockMerchantOnboardingData(
+            maria,
+            Collateral({currency: Currency.wrap(makeAddr("collateral")), collateralType: CollateralType.CRYPTO, amount: 1000000000000000000})
+        );
+        bytes memory userData = abi.encode(merchantOnboardingData);
+        merchantDataMediator.onUserDataHook(userData);
+        // NOTE: Maria retreicves its credit information
+        ICreditAssesmentManager creditAssesmentManager = merchantDataMediator.getCreditAssesmentManager(merchantOnboardingData.businessId, merchantOnboardingData.countryCodeHash);
+        uint256 mariaTotalCDSTokensSupply = creditAssesmentManager.getTotalCDSTokensSupply(merchantOnboardingData.creditAssesmentId);
+        console2.log(
+            "Maria's equity tokens total supply:",
+            mariaTotalCDSTokensSupply
+        );
+
+        uint256 amountToSell = 100_000;
+        uint256 fundedAmount = creditAssesmentManager.sellCDSTokens(
+            merchantOnboardingData.creditAssesmentId, 
+            amountToSell,
+            mariaFundManager
+        );
+        console2.log(
+            "Maria's funded amount:",
+            fundedAmount
+        );
+
+        
+        
+
+
+
+        
     }
 
 

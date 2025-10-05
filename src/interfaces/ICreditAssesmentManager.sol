@@ -10,5 +10,11 @@ interface ICreditAssesmentManager {
     function getMetrics(bytes32 creditAssesmentId) external view returns (Metrics memory metrics);
     function setCollateralInfo(bytes32 creditAssesmentId, Collateral memory collateral) external;
     function setMetrics(bytes32 creditAssesmentId, Metrics memory metrics) external;
+    function getTotalCDSTokensSupply(bytes32 creditAssesmentId) external view returns (uint256);
+    function sellCDSTokens(
+        bytes32 creditAssesmentId,
+        uint256 amount,
+        address receiver
+    ) external returns (uint256 stableCoinAmount);
 
 }

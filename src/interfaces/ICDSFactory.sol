@@ -9,6 +9,8 @@ import {IMerchantDataMediator} from "./IMerchantDataMediator.sol";
 import {IAlgebraCustomPluginFactory} from "@cryptoalgebra/default-plugin/contracts/interfaces/IAlgebraCustomPluginFactory.sol";
 
 import {IAlgebraCustomPoolEntryPoint} from "@cryptoalgebra/integral-periphery/contracts/interfaces/IAlgebraCustomPoolEntryPoint.sol";
+
+import {Metrics} from "../types/Metrics.sol";
 interface ICDSFactory is IAlgebraCustomPoolEntryPoint {
     function merchantDataMediator() external view returns(IMerchantDataMediator);
     error CDSAlreadyDeployed(bytes32 creditAssesmentId);
@@ -22,6 +24,8 @@ interface ICDSFactory is IAlgebraCustomPoolEntryPoint {
     // NOTE: This function needs to be heavily protected on information retreival and on who can
     // interact with ICDS as the token is credit default swap
     function getCDS(bytes32 creditAssesmentId) external view returns(ICDS);
+
+    function getPairedStableCoin(address cds) external view returns(address);
     
     function isCDSDeployed(bytes32 creditAssesmentId) external view returns(bool);
 }

@@ -36,6 +36,7 @@ import {EnumerableMap} from "@openzeppelin/contracts/utils/structs/EnumerableMap
 //==================================================================================
 
 import {ICDSFactory} from "./interfaces/ICDSFactory.sol";
+import {ICreditAssesmentManager} from "./interfaces/ICreditAssesmentManager.sol";
 import {AlgebraCustomPoolEntryPoint} from "@cryptoalgebra/integral-periphery/contracts/AlgebraCustomPoolEntryPoint.sol";
 
 
@@ -74,7 +75,7 @@ contract MerchantDataMediator is IMerchantDataMediator{
     using MetricsLibrary for Metrics;
 
     // ===========ALGEBRA CUSTOM PLUGIN FACTORY==========================//
-      bytes32 public constant override ALGEBRA_CUSTOM_PLUGIN_ADMINISTRATOR = keccak256('ALGEBRA_CUSTOM_PLUGIN_ADMINISTRATOR');
+    bytes32 public constant override ALGEBRA_CUSTOM_PLUGIN_ADMINISTRATOR = keccak256('ALGEBRA_CUSTOM_PLUGIN_ADMINISTRATOR');
 
     /// @inheritdoc IAlgebraCustomPluginFactory
     address public immutable override algebraFactory;
@@ -135,7 +136,7 @@ contract MerchantDataMediator is IMerchantDataMediator{
  
   
 
-    function onUserDataHook(bytes memory userData) external {
+    function onUserDataHook(bytes memory userData) external{
         
         MerchantOnboardingData memory merchantOnboardingData = abi.decode(userData, (MerchantOnboardingData));
         (address protectionSeller, address merchantWallet) = (merchantOnboardingData.protectionSeller, merchantOnboardingData.merchantWallet);
@@ -164,10 +165,28 @@ contract MerchantDataMediator is IMerchantDataMediator{
 
         creditAssesmentManagerPerCountryHashAndBusinessId[merchantOnboardingData.countryCodeHash][merchantOnboardingData.businessId].setCollateralInfo(merchantOnboardingData.creditAssesmentId, Collateral({
             currency: Currency.wrap(merchantOnboardingData.collateralAddress),
-            collateralType: CollateralType(merchantOnboardingData.collateralType)
+            collateralType: CollateralType(merchantOnboardingData.collateralType),
+            amount: merchantOnboardingData.amount
         }));
+
         creditAssesmentManagerPerCountryHashAndBusinessId[merchantOnboardingData.countryCodeHash][merchantOnboardingData.businessId].setMetrics(merchantOnboardingData.creditAssesmentId, metrics);
 
+        uint256 initialPrice = _calculateInitialPrice(
+            merchantOnboardingData.businessId,
+            merchantOnboardingData.countryCodeHash, 
+            merchantOnboardingData.creditAssesmentId,
+            metrics
+        );
+        address cdsToken = address(cdsFactory.getCDS(merchantOnboardingData.creditAssesmentId));
+        address stableCoin = cdsFactory.getPairedStableCoin(cdsToken);
+
+        address pool = IAlgebraFactory(algebraFactory).customPoolByPair(
+            address(this),
+            cdsToken, 
+            stableCoin
+        );
+
+        IAlgebraPoolActions(pool).initialize(uint160(initialPrice));
         
     }
 
@@ -179,6 +198,12 @@ contract MerchantDataMediator is IMerchantDataMediator{
     }
     function getCreditAssesmentCollateral(bytes32 businessId, bytes32 countryHash, bytes32 creditAssesmentId) external view returns (Collateral memory collateral) {
         return creditAssesmentManagerPerCountryHashAndBusinessId[countryHash][businessId].getCollateralInfo(creditAssesmentId);
+    }
+    function getCreditAssesmentManager(bytes32 businessId, bytes32 countryHash) external view returns (ICreditAssesmentManager) {
+        return creditAssesmentManagerPerCountryHashAndBusinessId[countryHash][businessId];
+    }
+    function getCDSFactory() external view returns (ICDSFactory) {
+        return cdsFactory;
     }
     // function getTotalBusinessesOfCountry(bytes32 countryHash) external view returns (uint256) {
     //     return businessesPerCountry.length(countryHash);
@@ -203,7 +228,10 @@ contract MerchantDataMediator is IMerchantDataMediator{
         require(msg.sender == entryPoint);
         require(pluginByPool[pool] == address(0), 'Already created');
   
-  
+        return _deployCreditAssesmentManager(pool, data);
+    }
+
+    function _deployCreditAssesmentManager(address pool, bytes calldata data) internal returns (address) {
         (bytes32 creditAssesmentId, bytes32 businessId, bytes32 countryCodeHash, Metrics memory metrics) = abi.decode(data, (bytes32, bytes32, bytes32, Metrics));
         
         bytes memory constructorArgs = abi.encode(
@@ -212,12 +240,13 @@ contract MerchantDataMediator is IMerchantDataMediator{
             pool,
             algebraFactory,
             address(this)
-        
         );
+        
         bytes memory bytecode = abi.encodePacked(
             type(CreditAssesmentManager).creationCode,
             constructorArgs
         );
+        
         address creditAssesmentManagerAddress = Create2.deploy(
             uint256(0x00),
             keccak256(constructorArgs),
@@ -226,11 +255,9 @@ contract MerchantDataMediator is IMerchantDataMediator{
 
         pluginByPool[pool] = creditAssesmentManagerAddress;
         creditAssesmentManagerPerCountryHashAndBusinessId[countryCodeHash][businessId] = ICreditAssesmentManager(creditAssesmentManagerAddress);
-        // NOTE: At this point the plugin is set, since we do not have a way to pass to the afterCreatePoolHook the metricst we do it here
-        uint256 initialPrice = _calculateInitialPrice(businessId, countryCodeHash, creditAssesmentId, metrics);
-        IAlgebraPoolActions(pool).initialize(uint160(initialPrice));
+        
+        
         return creditAssesmentManagerAddress;
-
     }
 
     // NOTE: The afterCreatePoolHook now that has the credit assesment manager deployed on the pool

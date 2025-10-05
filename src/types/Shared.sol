@@ -13,6 +13,7 @@ struct MerchantOnboardingData{
     // Collateral collateral;
     address collateralAddress;
     uint8 collateralType;
+    uint256 amount;
     // TODO: The amount of collateral entered ...
     
     // CDS Entity Management
@@ -63,5 +64,6 @@ enum CollateralType{
 struct Collateral{
     Currency currency;
     CollateralType collateralType;
+    uint256 amount;
 }
 

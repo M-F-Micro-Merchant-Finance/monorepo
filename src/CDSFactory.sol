@@ -33,6 +33,8 @@ contract CDSFactory is ICDSFactory, AlgebraCustomPoolEntryPoint {
     mapping(bytes32 creditAssesmentId => address cds) private _deployedCDS;
     mapping(address cds => bool isDeployed) private _isCDSDeployed;
 
+    mapping(address cds => address stableCoin) private _pairedStableCoin;
+
     
     constructor(
         IAlgebraFactory _algebraFactory,
@@ -54,6 +56,9 @@ contract CDSFactory is ICDSFactory, AlgebraCustomPoolEntryPoint {
 
     function getMerchantDataMediator() external view returns(IMerchantDataMediator) {
         return merchantDataMediator;
+    }
+    function getPairedStableCoin(address cds) external view returns(address) {
+        return _pairedStableCoin[cds];
     }
 
     function createCDS(address protectionSeller, address merchantWallet, bytes32 businessId, bytes32 countryCodeHash, bytes32 creditAssesmentId, Metrics memory metrics) external returns(ICDS) {
@@ -79,12 +84,12 @@ contract CDSFactory is ICDSFactory, AlgebraCustomPoolEntryPoint {
             protectionSeller,
             address(cdsInstance),
             address(stableCoin),
-            abi.encode(creditAssesmentId, businessId, countryCodeHash),
-            metrics
+            abi.encode(creditAssesmentId, businessId, countryCodeHash, metrics)
         );
        
         _deployedCDS[creditAssesmentId] = cdsInstance;
         _isCDSDeployed[cdsInstance] = true;
+        _pairedStableCoin[cdsInstance] = address(stableCoin);
         emit CDSCreated(creditAssesmentId, cdsInstance);
         return ICDS(cdsInstance);
     }

@@ -7,6 +7,9 @@ import {IAlgebraCustomPluginFactory} from "@cryptoalgebra/default-plugin/contrac
 import {Metrics} from "../types/Metrics.sol";
 import {Collateral} from "../types/Shared.sol";
 
+import {ICreditAssesmentManager} from "./ICreditAssesmentManager.sol";
+import {ICDSFactory} from "./ICDSFactory.sol";
+
 interface IMerchantDataMediator is IAlgebraCustomPluginFactory {
     // TODO: Should this method have a return type ??
     function onUserDataHook(bytes memory userData) external;
@@ -16,4 +19,9 @@ interface IMerchantDataMediator is IAlgebraCustomPluginFactory {
     function getCreditAssesmentMetrics(bytes32 businessId, bytes32 countryHash, bytes32 creditAssesmentId) external view returns (Metrics memory metrics);
     function getCreditAssesmentCollateral(bytes32 businessId, bytes32 countryHash, bytes32 creditAssesmentId) external view returns (Collateral memory collateral);
     function getTotalCountries() external view returns (uint256);
+
+    function getCreditAssesmentManager(bytes32 businessId, bytes32 countryHash) external view returns (ICreditAssesmentManager);
+
+    function getCDSFactory() external view returns (ICDSFactory);
+
 }

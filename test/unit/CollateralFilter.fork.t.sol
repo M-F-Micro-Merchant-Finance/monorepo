@@ -71,9 +71,9 @@ contract CollateralFilterTests is Test {
     function test__merchantOnboarding__whitelistCurrencySuccess() public {
         test__merchantOnboarding__addCurrencyValidationStrategySuccess();
         vm.startPrank(whaleDeployer);
-        collateralFilter.addToWhitelist(Collateral({currency: Currency.wrap(USDC), collateralType: CollateralType.CURRENCY}));
+        collateralFilter.addToWhitelist(Collateral({currency: Currency.wrap(USDC), collateralType: CollateralType.CURRENCY, amount: 1000000000000000000}));
         vm.stopPrank();
-        assertTrue(collateralFilter.isWhitelisted(Collateral({currency: Currency.wrap(USDC), collateralType: CollateralType.CURRENCY})));
+        assertTrue(collateralFilter.isWhitelisted(Collateral({currency: Currency.wrap(USDC), collateralType: CollateralType.CURRENCY, amount: 1000000000000000000})));
     }
     
 
