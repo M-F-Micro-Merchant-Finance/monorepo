@@ -186,8 +186,17 @@ contract MerchantDataMediator is IMerchantDataMediator{
             stableCoin
         );
 
-        IAlgebraPoolActions(pool).initialize(uint160(initialPrice));
+        creditAssesmentManagerPerCountryHashAndBusinessId[merchantOnboardingData.countryCodeHash][merchantOnboardingData.businessId].writeToCache(
+            ICreditAssesmentManager.CacheSlot.CACHE_SLOT_0, merchantOnboardingData.creditAssesmentId
+        );
         
+        creditAssesmentManagerPerCountryHashAndBusinessId[merchantOnboardingData.countryCodeHash][merchantOnboardingData.businessId].writeToCache(
+            ICreditAssesmentManager.CacheSlot.CACHE_SLOT_1, bytes32(uint256(uint160(protectionSeller)))
+        );
+
+        IAlgebraPoolActions(pool).initialize(uint160(initialPrice));
+
+        creditAssesmentManagerPerCountryHashAndBusinessId[merchantOnboardingData.countryCodeHash][merchantOnboardingData.businessId].grantFundManagerRole(protectionSeller);
     }
 
     function getBusinessCountryById(bytes32 businessId) external view returns (bytes32) {
@@ -196,7 +205,8 @@ contract MerchantDataMediator is IMerchantDataMediator{
     function getCreditAssesmentMetrics(bytes32 businessId, bytes32 countryHash, bytes32 creditAssesmentId) external view returns (Metrics memory metrics) {
         return creditAssesmentManagerPerCountryHashAndBusinessId[countryHash][businessId].getMetrics(creditAssesmentId);
     }
-    function getCreditAssesmentCollateral(bytes32 businessId, bytes32 countryHash, bytes32 creditAssesmentId) external view returns (Collateral memory collateral) {
+    function getCreditAssesmentCollateral(bytes32 businessId, bytes32 countryHash, bytes32 creditAssesmentId) external view returns (Collateral memory collateral)
+     {
         return creditAssesmentManagerPerCountryHashAndBusinessId[countryHash][businessId].getCollateralInfo(creditAssesmentId);
     }
     function getCreditAssesmentManager(bytes32 businessId, bytes32 countryHash) external view returns (ICreditAssesmentManager) {
