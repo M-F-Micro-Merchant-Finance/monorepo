@@ -1,0 +1,186 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Dark Green Professional Theme with 3D Elements */
+
+@layer base {
+  :root {
+    --background: 120 8% 8%;
+    --foreground: 120 5% 90%;
+
+    --card: 120 8% 12%;
+    --card-foreground: 120 5% 90%;
+
+    --popover: 120 8% 12%;
+    --popover-foreground: 120 5% 90%;
+
+    --primary: 142 76% 36%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 120 8% 15%;
+    --secondary-foreground: 120 5% 85%;
+
+    --muted: 120 8% 15%;
+    --muted-foreground: 120 5% 65%;
+
+    --accent: 142 76% 36%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 120 8% 20%;
+    --input: 120 8% 20%;
+    --ring: 142 76% 36%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 120 8% 10%;
+    --sidebar-foreground: 120 5% 80%;
+    --sidebar-primary: 142 76% 36%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 120 8% 15%;
+    --sidebar-accent-foreground: 120 5% 85%;
+    --sidebar-border: 120 8% 20%;
+    --sidebar-ring: 142 76% 36%;
+
+    /* Dark Green Merchant Theme */
+    --merchant-primary: 142 76% 36%;
+    --merchant-primary-light: 142 76% 45%;
+    --merchant-primary-dark: 142 76% 25%;
+    --merchant-secondary: 120 8% 15%;
+    --merchant-accent: 142 100% 45%;
+    --merchant-warning: 45 93% 47%;
+    --merchant-success: 142 71% 45%;
+    --merchant-surface: 120 8% 12%;
+    
+    /* Dark Green Gradients with 3D effects */
+    --gradient-primary: linear-gradient(135deg, hsl(142 76% 36%) 0%, hsl(142 76% 45%) 50%, hsl(142 100% 45%) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(120 8% 12%) 0%, hsl(120 8% 18%) 100%);
+    --gradient-surface: linear-gradient(145deg, hsl(120 8% 14%) 0%, hsl(120 8% 10%) 100%);
+    --gradient-logo: radial-gradient(circle at center, hsl(142 76% 36% / 0.1) 0%, hsl(120 8% 8% / 0.9) 70%);
+    
+    /* 3D Shadows and Effects */
+    --shadow-3d: 0 8px 32px hsl(142 76% 36% / 0.15), 0 4px 16px hsl(120 8% 0% / 0.3);
+    --shadow-3d-hover: 0 12px 40px hsl(142 76% 36% / 0.25), 0 6px 20px hsl(120 8% 0% / 0.4);
+    --shadow-inset: inset 0 2px 4px hsl(120 8% 0% / 0.2), inset 0 -2px 4px hsl(142 76% 36% / 0.1);
+    --shadow-glow: 0 0 20px hsl(142 76% 36% / 0.3);
+    --shadow-logo: 0 0 40px hsl(142 76% 36% / 0.4), 0 0 80px hsl(142 100% 45% / 0.2);
+    
+    /* Business-focused dark colors */
+    --business-primary: 142 76% 36%;
+    --business-secondary: 120 8% 15%;
+    --business-surface: 120 8% 12%;
+    --business-success: 142 71% 45%;
+    --business-warning: 45 93% 47%;
+    --business-accent: 142 100% 45%;
+  }
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  body {
+    background: linear-gradient(135deg, hsl(120 8% 8%) 0%, hsl(120 10% 6%) 100%);
+    color: hsl(var(--foreground));
+    font-feature-settings: "rlig" 1, "calt" 1;
+    min-height: 100vh;
+  }
+}
+
+@layer utilities {
+  .gradient-primary {
+    background: var(--gradient-primary);
+  }
+  
+  .gradient-secondary {
+    background: var(--gradient-secondary);
+  }
+  
+  .gradient-surface {
+    background: var(--gradient-surface);
+  }
+  
+  .gradient-logo {
+    background: var(--gradient-logo);
+  }
+  
+  .shadow-3d {
+    box-shadow: var(--shadow-3d);
+  }
+  
+  .shadow-3d-hover {
+    box-shadow: var(--shadow-3d-hover);
+  }
+  
+  .shadow-inset {
+    box-shadow: var(--shadow-inset);
+  }
+  
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+  
+  .shadow-logo {
+    box-shadow: var(--shadow-logo);
+  }
+  
+  .glass-effect {
+    backdrop-filter: blur(10px);
+    background: hsl(120 8% 12% / 0.8);
+    border: 1px solid hsl(142 76% 36% / 0.2);
+  }
+  
+  .logo-glow {
+    filter: drop-shadow(0 0 20px hsl(142 76% 36% / 0.6));
+  }
+  
+  .text-3d {
+    text-shadow: 
+      0 1px 0 hsl(120 8% 0% / 0.5),
+      0 2px 4px hsl(142 76% 36% / 0.3);
+  }
+}
+
+/* 3D Animation Keyframes */
+@keyframes float-3d {
+  0%, 100% { 
+    transform: translateY(0px) rotateX(0deg); 
+  }
+  50% { 
+    transform: translateY(-10px) rotateX(5deg); 
+  }
+}
+
+@keyframes logo-pulse {
+  0%, 100% { 
+    filter: drop-shadow(0 0 20px hsl(142 76% 36% / 0.6));
+  }
+  50% { 
+    filter: drop-shadow(0 0 30px hsl(142 76% 36% / 0.9)) drop-shadow(0 0 50px hsl(142 100% 45% / 0.4));
+  }
+}
+
+@keyframes rotate-3d {
+  0% { 
+    transform: perspective(1000px) rotateY(0deg); 
+  }
+  100% { 
+    transform: perspective(1000px) rotateY(360deg); 
+  }
+}
+
+.animate-float-3d {
+  animation: float-3d 6s ease-in-out infinite;
+}
+
+.animate-logo-pulse {
+  animation: logo-pulse 4s ease-in-out infinite;
+}
+
+.animate-rotate-3d {
+  animation: rotate-3d 20s linear infinite;
+}
