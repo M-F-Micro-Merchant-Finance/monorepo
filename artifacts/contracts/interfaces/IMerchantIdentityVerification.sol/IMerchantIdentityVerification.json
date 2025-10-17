@@ -1,0 +1,186 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "IMerchantIdentityVerification",
+  "sourceName": "contracts/interfaces/IMerchantIdentityVerification.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "InvalidMerchantAddress",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "MechantAlreadyVerified",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "MinAgeRequirementTooLow",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "UnderageMerchant",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "VerificationConfigNotFound",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "nullifier",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "merchant",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "documentType",
+          "type": "uint256"
+        }
+      ],
+      "name": "MerchantVerified",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "newMinAgeRequirement",
+          "type": "uint256"
+        }
+      ],
+      "name": "MinAgeRequirementUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "configId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "VerificationConfigUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "merchant",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "reason",
+          "type": "string"
+        }
+      ],
+      "name": "VerificationRevoked",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "merchant",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "newDocumentType",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "VerificationUpdated",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes",
+          "name": "output",
+          "type": "bytes"
+        },
+        {
+          "internalType": "bytes",
+          "name": "userData",
+          "type": "bytes"
+        }
+      ],
+      "name": "onVerificationSuccess",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_minAgeRequirement",
+          "type": "uint256"
+        }
+      ],
+      "name": "setMinAgeRequirement",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes",
+          "name": "proofPayload",
+          "type": "bytes"
+        },
+        {
+          "internalType": "bytes",
+          "name": "userContextData",
+          "type": "bytes"
+        }
+      ],
+      "name": "verifySelfProof",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

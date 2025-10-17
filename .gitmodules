@@ -1,70 +1,9 @@
 [submodule "lib/forge-std"]
 	path = lib/forge-std
 	url = https://github.com/foundry-rs/forge-std
-[submodule "lib/mento-core"]
-	path = lib/mento-core
-	url = https://github.com/mento-protocol/mento-core
-[submodule "lib/mento-deployment"]
-	path = lib/mento-deployment
-	url = https://github.com/mento-protocol/mento-deployment
-[submodule "lib/governance-tests"]
-	path = lib/governance-tests
-	url = https://github.com/mento-protocol/governance-tests
-[submodule "lib/oracle-v2-playground"]
-	path = lib/oracle-v2-playground
-	url = https://github.com/mento-protocol/oracle-v2-playground
-[submodule "lib/mento-std"]
-	path = lib/mento-std
-	url = https://github.com/mento-protocol/mento-std
-[submodule "lib/mento-router"]
-	path = lib/mento-router
-	url = https://github.com/mento-protocol/mento-router
-[submodule "lib/hackathon-demo"]
-	path = lib/hackathon-demo
-	url = https://github.com/mento-protocol/hackathon-demo
 [submodule "lib/v4-periphery"]
 	path = lib/v4-periphery
 	url = https://github.com/Uniswap/v4-periphery
-[submodule "lib/openzeppelin-contracts"]
-	path = lib/openzeppelin-contracts
-	url = https://github.com/Openzeppelin/openzeppelin-contracts
-[submodule "lib/Roci-Smart-Contracts-v2"]
-	path = lib/Roci-Smart-Contracts-v2
-	url = https://github.com/RociFi/Roci-Smart-Contracts-v2
-[submodule "lib/Algebra"]
-	path = lib/Algebra
-	url = https://github.com/cryptoalgebra/Algebra
-	branch = integral-v1.2.2
-[submodule "lib/plugins-monorepo"]
-	path = lib/plugins-monorepo
-	url = https://github.com/cryptoalgebra/plugins-monorepo
 [submodule "lib/foundry-devops"]
 	path = lib/foundry-devops
 	url = https://github.com/Cyfrin/foundry-devops
-[submodule "lib/openzeppelin-contracts-v5"]
-	path = lib/openzeppelin-contracts-v5
-	url = https://github.com/OpenZeppelin/openzeppelin-contracts.git
-[submodule "lib/synthetix-v3"]
-	path = lib/synthetix-v3
-	url = https://github.com/Synthetixio/synthetix-v3
-[submodule "uniswap-immplementation/lib/forge-std"]
-	path = uniswap-immplementation/lib/forge-std
-	url = https://github.com/foundry-rs/forge-std
-[submodule "uniswap-immplementation/lib/balancer-v3-monorepo"]
-	path = uniswap-immplementation/lib/balancer-v3-monorepo
-	url = https://github.com/Balancer/balancer-v3-monorepo
-[submodule "uniswap-immplementation/lib/hookathon-unilend"]
-	path = uniswap-immplementation/lib/hookathon-unilend
-	url = https://github.com/ankitpal1029/hookathon-unilend
-[submodule "uniswap-immplementation/lib/v4-periphery"]
-	path = uniswap-immplementation/lib/v4-periphery
-	url = https://github.com/Uniswap/v4-periphery
-[submodule "uniswap-immplementation/lib/foundational-hooks"]
-	path = uniswap-immplementation/lib/foundational-hooks
-	url = https://github.com/uniswapFoundation/foundational-hooks
-[submodule "uniswap-immplementation/lib/uniswap-hooks"]
-	path = uniswap-immplementation/lib/uniswap-hooks
-	url = https://github.com/Openzeppelin/uniswap-hooks
-[submodule "uniswap-immplementation/lib/openzeppelin-contracts"]
-	path = uniswap-immplementation/lib/openzeppelin-contracts
-	url = https://github.com/Openzeppelin/openzeppelin-contracts
